@@ -64,7 +64,7 @@
                     id:           /*[[${c.id}]]*/ 0,
                     name:         /*[[${c.name}]]*/ '',
                     mobile:       /*[[${c.mobile}]]*/ '',
-                    code:         /*[[${c.code != null ? c.customerCode : ''}]]*/ '',
+                    code:         /*[[${c.customerCode}]]*/ '',
                     email:        /*[[${c.email}]]*/ '',
                     address:      /*[[${c.address}]]*/ '',
                     customerType: /*[[${c.customerType}]]*/ ''
@@ -608,7 +608,7 @@
                                 <input type="hidden" th:field="*{businessId}"/>
                                 <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">
                                     <div><i class="bi bi-building me-2 text-primary"></i>
-                                        <strong th:text="${sale.businessName ?: 'Current Business'}">Business</strong>
+                                        <strong th:text="${businessName ?: 'Current Business'}">Business</strong>
                                     </div>
                                     <div style="margin-top:6px;color:var(--text-muted);font-size:11px;">
                                         Invoice will be created under the currently active business.
