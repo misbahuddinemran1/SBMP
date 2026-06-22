@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="'Edit ' + ${sale.saleNumber}">Edit Sale</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --bg:        #f4f6fb; --surface:   #ffffff; --border:    #dde2ee;
+            --accent:    #2563eb; --accent2:   #059669; --accent3:   #dc2626;
+            --text:      #1a1f36; --muted:     #6b7280; --radius:12px;
+        }
+        *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+        body { background:var(--bg); color:var(--text); font-family:'DM Mono',monospace; min-height:100vh; }
+
+        .topbar {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:16px 32px; border-bottom:1px solid var(--border);
+            background:var(--surface); position:sticky; top:0; z-index:100;
+        }
+        .topbar-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem; color:var(--accent); }
+        .topbar-logo span { color:var(--text); }
+        .nav-links { display:flex; gap:8px; }
+        .nav-links a {
+            color:var(--muted); text-decoration:none; font-size:0.75rem;
+            padding:6px 14px; border-radius:6px; transition:all .2s;
+            letter-spacing:.5px; text-transform:uppercase;
+        }
+        .nav-links a:hover { background:var(--border); color:var(--accent); }
+
+        .main { padding:32px; max-width:1100px; margin:0 auto; }
+
+        .alert { padding:12px 16px; border-radius:var(--radius); font-size:0.82rem; margin-bottom:20px; }
+        .alert-error { background:#fee2e2; border:1px solid #dc2626; color:var(--accent3); }
+
+        .page-header { display:flex; align-items:flex-start; gap:16px; margin-bottom:28px; }
+        .page-header h1 { font-family:'Syne',sans-serif; font-weight:800; font-size:1.5rem; }
+        .breadcrumb { color:var(--muted); font-size:0.75rem; margin-bottom:4px; }
+        .breadcrumb a { color:var(--accent); text-decoration:none; }
+
+        .form-grid { display:grid; grid-template-columns:2fr 1fr; gap:20px; }
+
+        .card {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:var(--radius); padding:24px; margin-bottom:16px;
+        }
+        .card-title {
+            font-family:'Syne',sans-serif; font-weight:700; font-size:0.9rem;
+            color:var(--text); margin-bottom:20px;
+            display:flex; align-items:center; gap:8px;
+        }
+        .card-title .dot { width:8px; height:8px; border-radius:50%; background:var(--accent); }
+
+        .field { margin-bottom:16px; }
+        .field label { display:block; font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+        .field input, .field select, .field textarea {
+            width:100%; background:#f8faff; border:1px solid var(--border);
+            color:var(--text); font-family:'DM Mono',monospace;
+            font-size:0.82rem; padding:10px 12px; border-radius:8px;
+            outline:none; transition:border-color .2s;
+        }
+        .field input:focus, .field select:focus, .field textarea:focus { border-color:var(--accent); }
+        .field select option { background:#f8faff; }
+        .field textarea { resize:vertical; min-height:70px; }
+        .field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+        .items-table { width:100%; border-collapse:collapse; font-size:0.78rem; margin-bottom:12px; }
+        .items-table thead tr { border-bottom:1px solid var(--border); }
+        .items-table th {
+            font-size:0.63rem; letter-spacing:1px; text-transform:uppercase;
+            color:var(--muted); padding:8px 6px; text-align:left; font-weight:400;
+        }
+        .items-table td { padding:6px 4px; border-bottom:1px solid #eef1f8; vertical-align:middle; }
+        .items-table input, .items-table select {
+            width:100%; background:#f8faff; border:1px solid var(--border);
+            color:var(--text); font-family:'DM Mono',monospace;
+            font-size:0.75rem; padding:6px 8px; border-radius:6px; outline:none;
+        }
+        .items-table input:focus, .items-table select:focus { border-color:var(--accent); }
+        .items-table .item-total { color:var(--accent); font-weight:600; padding:0 8px; white-space:nowrap; }
+        .items-table select option { background:#f8faff; }
+
+        .btn-remove {
+            background:transparent; border:1px solid #fee2e2; color:var(--accent3);
+            font-size:0.7rem; padding:4px 8px; border-radius:5px; cursor:pointer;
+            font-family:'DM Mono',monospace; transition:all .2s;
+        }
+        .btn-remove:hover { background:#fee2e2; }
+
+        .btn-add-row {
+            background:transparent; border:1px dashed var(--border); color:var(--muted);
+            font-size:0.75rem; padding:8px 16px; border-radius:8px; cursor:pointer;
+            font-family:'DM Mono',monospace; transition:all .2s; width:100%;
+        }
+        .btn-add-row:hover { border-color:var(--accent2); color:var(--accent2); }
+
+        .summary-box { font-size:0.82rem; }
+        .summary-row {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:8px 0; border-bottom:1px solid var(--border);
+        }
+        .summary-row:last-child { border-bottom:none; }
+        .summary-label { color:var(--muted); }
+        .summary-value { font-weight:500; }
+        .summary-total .summary-label { font-family:'Syne',sans-serif; font-weight:700; font-size:0.95rem; color:var(--text); }
+        .summary-total .summary-value { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; color:var(--accent); }
+        .summary-due   .summary-value { color:var(--accent3); }
+
+        .payment-table { width:100%; border-collapse:collapse; font-size:0.78rem; margin-bottom:12px; }
+        .payment-table th {
+            font-size:0.63rem; letter-spacing:1px; text-transform:uppercase;
+            color:var(--muted); padding:8px 4px; text-align:left; font-weight:400;
+            border-bottom:1px solid var(--border);
+        }
+        .payment-table td { padding:6px 4px; border-bottom:1px solid #eef1f8; }
+        .payment-table input, .payment-table select {
+            width:100%; background:#f8faff; border:1px solid var(--border);
+            color:var(--text); font-family:'DM Mono',monospace;
+            font-size:0.75rem; padding:6px 8px; border-radius:6px; outline:none;
+        }
+        .payment-table input:focus, .payment-table select:focus { border-color:var(--accent); }
+        .payment-table select option { background:#f8faff; }
+
+        .form-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:8px; }
+        .btn-save {
+            background:var(--accent);color:#fff; font-family:'Syne',sans-serif;
+            font-weight:700; font-size:0.85rem; padding:11px 28px;
+            border-radius:8px; border:none; cursor:pointer; transition:opacity .2s;
+        }
+        .btn-save:hover { opacity:.85; }
+        .btn-draft {
+            background:transparent; border:1px solid var(--border); color:var(--muted);
+            font-family:'DM Mono',monospace; font-size:0.82rem; padding:11px 24px;
+            border-radius:8px; cursor:pointer; transition:all .2s;
+        }
+        .btn-draft:hover { border-color:var(--muted); color:var(--text); }
+        .btn-cancel {
+            background:transparent; border:1px solid var(--border); color:var(--muted);
+            font-family:'DM Mono',monospace; font-size:0.82rem; padding:11px 24px;
+            border-radius:8px; text-decoration:none; transition:all .2s; display:inline-flex; align-items:center;
+        }
+        .btn-cancel:hover { border-color:var(--accent3); color:var(--accent3); }
+
+        @media (max-width:900px) {
+            .form-grid { grid-template-columns:1fr; }
+            .main { padding:16px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="topbar">
+    <div class="topbar-logo">SBMP<span> / Sales</span></div>
+    <div class="nav-links">
+        <a th:href="@{/sales}">Dashboard</a>
+        <a th:href="@{/sales/list}">All Sales</a>
+    </div>
+</nav>
+
+<div class="main">
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <div class="page-header">
+        <div>
+            <div class="breadcrumb">
+                <a th:href="@{/sales/list}">Sales</a> /
+                <a th:href="@{'/sales/' + ${sale.id}}" th:text="${sale.saleNumber}"></a>
+                / Edit
+            </div>
+            <h1>Edit Sale</h1>
+        </div>
+    </div>
+
+    <form th:action="@{'/sales/' + ${sale.id} + '/update'}" method="post" id="saleForm">
+        <input type="hidden" name="businessId" th:value="${businessId}"/>
+
+        <div class="form-grid">
+            <!-- LEFT -->
+            <div>
+                <!-- SALE INFO -->
+                <div class="card">
+                    <div class="card-title"><span class="dot"></span> Sale Info</div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label>Customer</label>
+                            <select name="customerId">
+                                <option value="">— Walk-in —</option>
+                                <option th:each="c : ${customers}"
+                                        th:value="${c.id}"
+                                        th:selected="${sale.customerId != null and sale.customerId == c.id}"
+                                        th:text="${c.name + ' (' + (c.phone != null ? c.phone : 'no phone') + ')'}"></option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Sale Date</label>
+                            <input type="date" name="saleDate"
+                                   th:value="${#temporals.format(sale.saleDate,'yyyy-MM-dd')}"
+                                   required/>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Notes</label>
+                        <textarea name="notes" th:text="${sale.notes}" placeholder="Optional notes…"></textarea>
+                    </div>
+                </div>
+
+                <!-- ITEMS -->
+                <div class="card">
+                    <div class="card-title"><span class="dot" style="background:var(--accent2)"></span> Sale Items</div>
+                    <table class="items-table" id="itemsTable">
+                        <thead>
+                            <tr>
+                                <th style="width:35%">Product</th>
+                                <th style="width:10%">Qty</th>
+                                <th style="width:15%">Unit Price</th>
+                                <th style="width:12%">Disc %</th>
+                                <th style="width:12%">Disc ৳</th>
+                                <th style="width:12%">Total</th>
+                                <th style="width:4%"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            <!-- Existing items from Thymeleaf — rendered by JS using EXISTING_ITEMS -->
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn-add-row" onclick="addItemRow()">+ Add Item</button>
+                </div>
+
+                <!-- PAYMENTS -->
+                <div class="card">
+                    <div class="card-title"><span class="dot" style="background:#60a0f0"></span> Payments</div>
+                    <table class="payment-table">
+                        <thead>
+                            <tr>
+                                <th>Method</th><th>Amount</th><th>Date</th><th>Ref No</th><th>Notes</th><th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsBody">
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn-add-row" onclick="addPaymentRow()">+ Add Payment</button>
+                </div>
+            </div>
+
+            <!-- RIGHT -->
+            <div>
+                <div class="card" style="position:sticky;top:80px">
+                    <div class="card-title"><span class="dot" style="background:var(--accent3)"></span> Summary</div>
+                    <div class="summary-box">
+                        <div class="summary-row">
+                            <span class="summary-label">Subtotal</span>
+                            <span class="summary-value">৳<span id="sumSubtotal">0.00</span></span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Item Discounts</span>
+                            <span class="summary-value">-৳<span id="sumItemDisc">0.00</span></span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Invoice Discount</span>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span>৳</span>
+                                <input type="number" name="invoiceDiscount" id="invoiceDiscount"
+                                       th:value="${sale.invoiceDiscount}"
+                                       min="0" step="0.01"
+                                       style="width:90px;text-align:right;"
+                                       oninput="recalculate()"/>
+                            </div>
+                        </div>
+                        <div class="summary-row summary-total">
+                            <span class="summary-label">Grand Total</span>
+                            <span class="summary-value">৳<span id="sumGrandTotal">0.00</span></span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Paid</span>
+                            <span class="summary-value">৳<span id="sumPaid">0.00</span></span>
+                        </div>
+                        <div class="summary-row summary-due">
+                            <span class="summary-label">Due</span>
+                            <span class="summary-value">৳<span id="sumDue">0.00</span></span>
+                        </div>
+                    </div>
+                    <div class="form-actions" style="margin-top:20px;flex-direction:column;">
+                        <input type="hidden" name="status" id="statusField" value="COMPLETED"/>
+                        <button type="submit" class="btn-save" onclick="setStatus('COMPLETED')">Update & Complete</button>
+                        <button type="submit" class="btn-draft" onclick="setStatus('DRAFT')">Save as Draft</button>
+                        <a th:href="@{'/sales/' + ${sale.id}}" class="btn-cancel" style="justify-content:center;margin-top:4px;">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Pass existing sale data to JS -->
+<script th:inline="javascript">
+    const PRODUCTS       = /*[[${products}]]*/ [];
+    const EXISTING_ITEMS = /*[[${sale.items}]]*/ [];
+    const EXISTING_PAYS  = /*[[${sale.payments}]]*/ [];
+</script>
+
+<script>
+    let itemIndex    = 0;
+    let paymentIndex = 0;
+
+    const productOpts = PRODUCTS.map(p =>
+        `<option value="${p.id}" data-price="${p.salePrice || p.sellingPrice || 0}">${p.name}</option>`
+    ).join('');
+
+    function addItemRow(preProductId, preQty, preUnitPrice, preDiscPct, preDiscAmt) {
+        const idx = itemIndex++;
+        const row = document.createElement('tr');
+        row.id = `item-row-${idx}`;
+        row.innerHTML = `
+            <td>
+                <select name="items[${idx}].productId" onchange="onProductChange(${idx})">
+                    <option value="">Select…</option>
+                    ${productOpts}
+                </select>
+            </td>
+            <td><input type="number" name="items[${idx}].saleQty"            value="${preQty || 1}"      min="1"   step="1"    oninput="calcItemRow(${idx})"/></td>
+            <td><input type="number" name="items[${idx}].unitPrice"          value="${preUnitPrice || 0}" min="0"   step="0.01" oninput="calcItemRow(${idx})"/></td>
+            <td><input type="number" name="items[${idx}].discountPercentage" value="${preDiscPct || 0}"  min="0"   max="100"  step="0.01" oninput="onDiscPctChange(${idx})"/></td>
+            <td><input type="number" name="items[${idx}].discountAmount"     value="${preDiscAmt || 0}"  min="0"   step="0.01" oninput="onDiscAmtChange(${idx})"/></td>
+            <td class="item-total" id="item-total-${idx}">৳0.00</td>
+            <td><button type="button" class="btn-remove" onclick="removeRow('item-row-${idx}')">✕</button></td>
+        `;
+        document.getElementById('itemsBody').appendChild(row);
+
+        if (preProductId) {
+            const sel = row.querySelector(`[name="items[${idx}].productId"]`);
+            sel.value = preProductId;
+        }
+        calcItemRow(idx);
+    }
+
+    function addPaymentRow(preMethod, preAmount, preDate, preRef, preNotes) {
+        const idx   = paymentIndex++;
+        const today = new Date().toISOString().split('T')[0];
+        const row   = document.createElement('tr');
+        row.id = `pay-row-${idx}`;
+        row.innerHTML = `
+            <td>
+                <select name="payments[${idx}].paymentMethod">
+                    ${['CASH','BKASH','NAGAD','ROCKET','BANK','CARD','CHEQUE','OTHER'].map(m =>
+                        `<option value="${m}" ${preMethod === m ? 'selected' : ''}>${m}</option>`
+                    ).join('')}
+                </select>
+            </td>
+            <td><input type="number" name="payments[${idx}].amount"      value="${preAmount || 0}"  min="0" step="0.01" oninput="recalculate()"/></td>
+            <td><input type="date"   name="payments[${idx}].paymentDate" value="${preDate   || today}"/></td>
+            <td><input type="text"   name="payments[${idx}].referenceNo" value="${preRef    || ''}" placeholder="Ref…"/></td>
+            <td><input type="text"   name="payments[${idx}].notes"       value="${preNotes  || ''}" placeholder="Notes…"/></td>
+            <td><button type="button" class="btn-remove" onclick="removeRow('pay-row-${idx}')">✕</button></td>
+        `;
+        document.getElementById('paymentsBody').appendChild(row);
+        recalculate();
+    }
+
+    function onProductChange(idx) {
+        const sel   = document.querySelector(`[name="items[${idx}].productId"]`);
+        const price = parseFloat(sel.options[sel.selectedIndex]?.dataset?.price || 0);
+        document.querySelector(`[name="items[${idx}].unitPrice"]`).value = price.toFixed(2);
+        calcItemRow(idx);
+    }
+
+    function onDiscPctChange(idx) {
+        const qty = parseFloat(document.querySelector(`[name="items[${idx}].saleQty"]`)?.value || 0);
+        const up  = parseFloat(document.querySelector(`[name="items[${idx}].unitPrice"]`)?.value || 0);
+        const pct = parseFloat(document.querySelector(`[name="items[${idx}].discountPercentage"]`)?.value || 0);
+        document.querySelector(`[name="items[${idx}].discountAmount"]`).value = ((qty * up * pct) / 100).toFixed(2);
+        calcItemRow(idx);
+    }
+
+    function onDiscAmtChange(idx) {
+        const qty = parseFloat(document.querySelector(`[name="items[${idx}].saleQty"]`)?.value || 0);
+        const up  = parseFloat(document.querySelector(`[name="items[${idx}].unitPrice"]`)?.value || 0);
+        const amt = parseFloat(document.querySelector(`[name="items[${idx}].discountAmount"]`)?.value || 0);
+        document.querySelector(`[name="items[${idx}].discountPercentage"]`).value =
+            (qty * up > 0 ? (amt / (qty * up)) * 100 : 0).toFixed(2);
+        calcItemRow(idx);
+    }
+
+    function calcItemRow(idx) {
+        const qty   = parseFloat(document.querySelector(`[name="items[${idx}].saleQty"]`)?.value || 0);
+        const up    = parseFloat(document.querySelector(`[name="items[${idx}].unitPrice"]`)?.value || 0);
+        const da    = parseFloat(document.querySelector(`[name="items[${idx}].discountAmount"]`)?.value || 0);
+        const total = Math.max(0, (qty * up) - da);
+        const el    = document.getElementById(`item-total-${idx}`);
+        if (el) el.textContent = '৳' + total.toFixed(2);
+        recalculate();
+    }
+
+    function removeRow(id) {
+        const row = document.getElementById(id);
+        if (row) row.remove();
+        recalculate();
+    }
+
+    function recalculate() {
+        let subtotal = 0, itemDisc = 0;
+        document.querySelectorAll('#itemsBody tr').forEach(row => {
+            const idx = row.id.replace('item-row-','');
+            const qty = parseFloat(row.querySelector(`[name="items[${idx}].saleQty"]`)?.value || 0);
+            const up  = parseFloat(row.querySelector(`[name="items[${idx}].unitPrice"]`)?.value || 0);
+            const da  = parseFloat(row.querySelector(`[name="items[${idx}].discountAmount"]`)?.value || 0);
+            subtotal += qty * up; itemDisc += da;
+        });
+        const invDisc    = parseFloat(document.getElementById('invoiceDiscount')?.value || 0);
+        const grandTotal = Math.max(0, subtotal - itemDisc - invDisc);
+        let paid = 0;
+        document.querySelectorAll('#paymentsBody tr').forEach(row => {
+            const idx = row.id.replace('pay-row-','');
+            paid += parseFloat(row.querySelector(`[name="payments[${idx}].amount"]`)?.value || 0);
+        });
+        document.getElementById('sumSubtotal').textContent   = subtotal.toFixed(2);
+        document.getElementById('sumItemDisc').textContent   = itemDisc.toFixed(2);
+        document.getElementById('sumGrandTotal').textContent = grandTotal.toFixed(2);
+        document.getElementById('sumPaid').textContent       = paid.toFixed(2);
+        document.getElementById('sumDue').textContent        = Math.max(0, grandTotal - paid).toFixed(2);
+    }
+
+    function setStatus(val) { document.getElementById('statusField').value = val; }
+
+    // Pre-populate from existing sale data
+    EXISTING_ITEMS.forEach(item => {
+        addItemRow(item.productId, item.saleQty, item.unitPrice, item.discountPercentage, item.discountAmount);
+    });
+    if (EXISTING_ITEMS.length === 0) addItemRow();
+
+    EXISTING_PAYS.forEach(pay => {
+        addPaymentRow(pay.paymentMethod, pay.amount, pay.paymentDate, pay.referenceNo, pay.notes);
+    });
+    if (EXISTING_PAYS.length === 0) addPaymentRow();
+</script>
+</body>
+</html>

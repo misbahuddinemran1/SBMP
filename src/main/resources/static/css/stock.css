@@ -1,0 +1,1117 @@
+/* ============================================================
+   stock.css — eLoan SaaS | Stock Module
+   Matched to product.css design system
+   ============================================================ */
+
+/* ── Design Tokens (same as product.css) ───────────────────── */
+:root {
+  --eloan-blue:        #2563eb;
+  --eloan-blue-light:  #eff6ff;
+  --eloan-blue-mid:    #bfdbfe;
+  --eloan-blue-hover:  #1d4ed8;
+  --eloan-amber:       #d97706;
+  --eloan-amber-light: #fffbeb;
+  --eloan-green:       #059669;
+  --eloan-green-light: #ecfdf5;
+  --eloan-red:         #dc2626;
+  --eloan-red-light:   #fef2f2;
+  --eloan-violet:      #7c3aed;
+  --eloan-violet-light:#f5f3ff;
+  --eloan-gray-50:     #f8fafc;
+  --eloan-gray-100:    #f1f5f9;
+  --eloan-gray-200:    #e2e8f0;
+  --eloan-gray-300:    #cbd5e1;
+  --eloan-gray-400:    #94a3b8;
+  --eloan-gray-500:    #64748b;
+  --eloan-gray-600:    #475569;
+  --eloan-gray-700:    #334155;
+  --eloan-gray-800:    #1e293b;
+  --eloan-gray-900:    #0f172a;
+  --eloan-white:       #ffffff;
+
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   18px;
+  --radius-full: 9999px;
+
+  --shadow-xs:   0 1px 2px 0 rgb(0 0 0 / .05);
+  --shadow-sm:   0 1px 3px 0 rgb(0 0 0 / .08), 0 1px 2px -1px rgb(0 0 0 / .06);
+  --shadow-md:   0 4px 6px -1px rgb(0 0 0 / .07), 0 2px 4px -2px rgb(0 0 0 / .06);
+  --shadow-lg:   0 10px 15px -3px rgb(0 0 0 / .07), 0 4px 6px -4px rgb(0 0 0 / .05);
+  --shadow-xl:   0 20px 25px -5px rgb(0 0 0 / .06), 0 8px 10px -6px rgb(0 0 0 / .05);
+
+  --font-body:   'Segoe UI', system-ui, -apple-system, sans-serif;
+  --transition:  all .2s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Base ───────────────────────────────────────────────────── */
+.eloan-body {
+  background: var(--eloan-gray-50);
+  font-family: var(--font-body);
+  color: var(--eloan-gray-800);
+  min-height: 100vh;
+}
+
+/* ── Layout Shell ───────────────────────────────────────────── */
+.eloan-main-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin-left: 260px;
+  transition: margin-left .25s ease;
+}
+
+.eloan-content {
+  flex: 1;
+  padding: 1.75rem 1.75rem 2.5rem;
+  max-width: 1400px;
+}
+
+@media (max-width: 991.98px) {
+  .eloan-main-wrapper { margin-left: 0; }
+  .eloan-content      { padding: 1.25rem 1rem 2rem; }
+}
+
+/* ── Stock Page Wrapper ──────────────────────────────────────── */
+.stock-page {
+  padding: 0;
+}
+
+/* ── Page Header ─────────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--eloan-gray-200);
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--eloan-gray-900);
+  letter-spacing: -.025em;
+  line-height: 1.25;
+}
+
+.page-subtitle {
+  font-size: .875rem;
+  color: var(--eloan-gray-500);
+  margin-top: .25rem;
+}
+
+.page-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--eloan-blue-light);
+  color: var(--eloan-blue);
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: .25rem .75rem;
+  border-radius: var(--radius-full);
+  margin-bottom: .4rem;
+  border: 1px solid var(--eloan-blue-mid);
+}
+
+/* ── Back Link ───────────────────────────────────────────────── */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--eloan-gray-500);
+  text-decoration: none;
+  margin-bottom: .4rem;
+  transition: var(--transition);
+}
+
+.back-link:hover { color: var(--eloan-blue); }
+
+/* ── Alert ───────────────────────────────────────────────────── */
+.alert {
+  padding: .75rem 1.125rem;
+  border-radius: var(--radius-md);
+  font-size: .875rem;
+  font-weight: 600;
+  margin-bottom: 1.125rem;
+  border: 1px solid transparent;
+}
+
+.alert-success {
+  background: var(--eloan-green-light);
+  color: var(--eloan-green);
+  border-color: rgba(5, 150, 105, .2);
+}
+
+.alert-danger {
+  background: var(--eloan-red-light);
+  color: var(--eloan-red);
+  border-color: rgba(220, 38, 38, .2);
+}
+
+/* ── Stat / KPI Cards ────────────────────────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.kpi-card {
+  background: var(--eloan-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--eloan-gray-100);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: var(--transition);
+  cursor: default;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.kpi-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.icon-blue   { background: var(--eloan-blue-light);   color: var(--eloan-blue); }
+.icon-green  { background: var(--eloan-green-light);  color: var(--eloan-green); }
+.icon-gold   { background: var(--eloan-amber-light);  color: var(--eloan-amber); }
+.icon-red    { background: var(--eloan-red-light);    color: var(--eloan-red); }
+.icon-violet { background: var(--eloan-violet-light); color: var(--eloan-violet); }
+
+/* Icon symbols via pseudo-element */
+.icon-blue::before   { content: '📦'; }
+.icon-green::before  { content: '💰'; }
+.icon-gold::before   { content: '⚠️'; }
+.icon-red::before    { content: '🚫'; }
+
+.kpi-body span {
+  font-size: .78rem;
+  color: var(--eloan-gray-500);
+  font-weight: 500;
+  letter-spacing: .01em;
+  display: block;
+  margin-bottom: .2rem;
+}
+
+.kpi-body strong {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--eloan-gray-900);
+  line-height: 1;
+  display: block;
+}
+
+/* ── Filter Bar ──────────────────────────────────────────────── */
+.filter-bar {
+  background: var(--eloan-white);
+  border: 1px solid var(--eloan-gray-200);
+  border-radius: var(--radius-lg);
+  padding: .875rem 1.125rem;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 340px;
+}
+
+.search-icon {
+  position: absolute;
+  left: .85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--eloan-gray-400);
+  font-size: .9rem;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: .55rem .875rem .55rem 2.25rem;
+  border: 1.5px solid var(--eloan-gray-200);
+  border-radius: var(--radius-md);
+  background: var(--eloan-white);
+  font-family: var(--font-body);
+  font-size: .875rem;
+  color: var(--eloan-gray-800);
+  height: 38px;
+  outline: none;
+  transition: var(--transition);
+}
+
+.search-input:focus {
+  border-color: var(--eloan-blue);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / .1);
+}
+
+.search-input::placeholder { color: var(--eloan-gray-400); }
+
+/* Filter Chips */
+.filter-chips {
+  display: flex;
+  gap: .375rem;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: .35rem 1rem;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: .78rem;
+  font-weight: 700;
+  border: 1.5px solid var(--eloan-gray-200);
+  background: var(--eloan-white);
+  color: var(--eloan-gray-600);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.chip:hover { background: var(--eloan-gray-50); border-color: var(--eloan-gray-300); }
+
+.chip-active {
+  background: var(--eloan-blue);
+  color: var(--eloan-white);
+  border-color: var(--eloan-blue);
+  box-shadow: 0 2px 8px rgb(37 99 235 / .22);
+}
+
+/* ── Eloan Card ──────────────────────────────────────────────── */
+.card,
+.eloan-card {
+  background: var(--eloan-white);
+  border: 1px solid var(--eloan-gray-100);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.card-header,
+.eloan-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .9rem 1.25rem;
+  border-bottom: 1px solid var(--eloan-gray-100);
+  background: var(--eloan-gray-50);
+}
+
+.card-header h3,
+.eloan-card__title {
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--eloan-gray-700);
+  display: flex;
+  align-items: center;
+}
+
+.card-count,
+.eloan-card__count {
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--eloan-gray-500);
+  background: var(--eloan-gray-100);
+  padding: .2rem .65rem;
+  border-radius: var(--radius-full);
+}
+
+/* ── Table ───────────────────────────────────────────────────── */
+.table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+.stock-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .875rem;
+}
+
+.stock-table thead tr {
+  border-bottom: 2px solid var(--eloan-gray-100);
+}
+
+.stock-table thead th {
+  padding: .875rem 1rem;
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--eloan-gray-500);
+  white-space: nowrap;
+  text-align: left;
+}
+
+.stock-table .t-row {
+  border-bottom: 1px solid var(--eloan-gray-50);
+  transition: background .15s ease;
+}
+
+.stock-table .t-row:last-child { border-bottom: none; }
+
+.stock-table .t-row:hover { background: var(--eloan-gray-50); }
+
+.stock-table td {
+  padding: .875rem 1rem;
+  vertical-align: middle;
+  color: var(--eloan-gray-700);
+}
+
+.td-num {
+  font-family: monospace;
+  font-size: .78rem;
+  color: var(--eloan-gray-400);
+  width: 36px;
+}
+
+.mono { font-family: 'Courier New', monospace; font-size: .8125rem; }
+.muted { color: var(--eloan-gray-500); }
+.bold  { font-weight: 700; }
+.small { font-size: .8125rem; }
+
+/* ── Product Cell ────────────────────────────────────────────── */
+.prod-cell {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-width: 180px;
+}
+
+.prod-av {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--eloan-blue-light), var(--eloan-blue-mid));
+  color: var(--eloan-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .9rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.prod-name {
+  font-weight: 600;
+  color: var(--eloan-gray-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.prod-unit {
+  font-size: .75rem;
+  color: var(--eloan-gray-400);
+  margin-top: .1rem;
+}
+
+/* ── Qty Bar ─────────────────────────────────────────────────── */
+.qty-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 80px;
+}
+
+.qty-num {
+  font-family: 'Courier New', monospace;
+  font-size: .875rem;
+  font-weight: 700;
+  color: var(--eloan-gray-800);
+}
+
+.qty-bar-bg {
+  height: 4px;
+  background: var(--eloan-gray-100);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.qty-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width .3s ease;
+}
+
+.bar-green { background: var(--eloan-green); }
+.bar-gold  { background: var(--eloan-amber); }
+.bar-red   { background: var(--eloan-red); }
+
+/* ── Stock Pills / Status Badges ─────────────────────────────── */
+.stock-pill,
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: .75rem;
+  font-weight: 600;
+  padding: .28rem .75rem;
+  border-radius: var(--radius-full);
+  letter-spacing: .02em;
+  white-space: nowrap;
+}
+
+.pill-ok,
+.status-badge--active   { background: var(--eloan-green-light);  color: var(--eloan-green); }
+.pill-low,
+.status-badge--warning  { background: var(--eloan-amber-light);  color: var(--eloan-amber);
+                           animation: pulse-badge 2s ease-in-out infinite; }
+.pill-out,
+.status-badge--inactive { background: var(--eloan-red-light);    color: var(--eloan-red); }
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .65; }
+}
+
+/* ── SKU / Category Chips ────────────────────────────────────── */
+.sku-badge {
+  display: inline-block;
+  background: var(--eloan-gray-100);
+  color: var(--eloan-gray-600);
+  font-size: .75rem;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  padding: .2rem .55rem;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.category-chip {
+  display: inline-block;
+  background: var(--eloan-violet-light);
+  color: var(--eloan-violet);
+  font-size: .75rem;
+  font-weight: 600;
+  padding: .2rem .65rem;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+/* Price values */
+.price-value {
+  font-weight: 600;
+  color: var(--eloan-gray-700);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Transaction Type Pills ──────────────────────────────────── */
+.type-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: .2rem .6rem;
+  border-radius: var(--radius-sm);
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.type-in  { background: var(--eloan-green-light);  color: var(--eloan-green);  border: 1px solid rgba(5,150,105,.2); }
+.type-out { background: var(--eloan-red-light);    color: var(--eloan-red);    border: 1px solid rgba(220,38,38,.2); }
+.type-adj { background: var(--eloan-blue-light);   color: var(--eloan-blue);   border: 1px solid rgba(37,99,235,.2); }
+
+/* Change numbers */
+.change-num { font-family: 'Courier New', monospace; font-size: .875rem; font-weight: 700; }
+.change-pos { color: var(--eloan-green); }
+.change-neg { color: var(--eloan-red); }
+
+/* Reference cell */
+.ref-cell { display: flex; flex-direction: column; gap: 2px; }
+.ref-type  { font-size: .7rem; font-weight: 700; text-transform: uppercase; color: var(--eloan-gray-400); }
+.ref-num   { font-size: .8125rem; color: var(--eloan-blue); }
+
+/* ── Action Buttons ──────────────────────────────────────────── */
+.action-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+}
+
+.act-btn,
+.btn-action {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .85rem;
+  border: 1.5px solid var(--eloan-gray-200);
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  background: var(--eloan-white);
+  color: var(--eloan-gray-500);
+  padding: 0;
+}
+
+.act-view:hover,
+.btn-action--view:hover { background: var(--eloan-blue-light);  color: var(--eloan-blue);  border-color: var(--eloan-blue-mid); transform: translateY(-1px); box-shadow: var(--shadow-xs); }
+.act-edit:hover,
+.btn-action--edit:hover { background: var(--eloan-amber-light); color: var(--eloan-amber); border-color: #fde68a; transform: translateY(-1px); box-shadow: var(--shadow-xs); }
+
+/* ── Global Buttons ──────────────────────────────────────────── */
+.btn,
+.btn-eloan-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-family: var(--font-body);
+  font-size: .875rem;
+  font-weight: 600;
+  padding: .5rem 1.125rem;
+  border-radius: var(--radius-md);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: var(--transition);
+  outline: none;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-primary,
+.btn-eloan-primary {
+  background: var(--eloan-blue);
+  color: var(--eloan-white);
+  border-color: var(--eloan-blue);
+}
+
+.btn-primary:hover,
+.btn-eloan-primary:hover {
+  background: var(--eloan-blue-hover);
+  border-color: var(--eloan-blue-hover);
+  color: var(--eloan-white);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(37 99 235 / .3);
+}
+
+.btn-primary:active,
+.btn-eloan-primary:active { transform: translateY(0); }
+
+.btn-secondary,
+.btn-eloan-cancel {
+  background: var(--eloan-white);
+  color: var(--eloan-gray-700);
+  border-color: var(--eloan-gray-200);
+}
+
+.btn-secondary:hover,
+.btn-eloan-cancel:hover {
+  background: var(--eloan-gray-50);
+  border-color: var(--eloan-gray-300);
+  color: var(--eloan-gray-800);
+}
+
+/* ── History Info Grid ───────────────────────────────────────── */
+.hist-info-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+}
+
+.hist-card {
+  background: var(--eloan-white);
+  border: 1px solid var(--eloan-gray-100);
+  border-radius: var(--radius-xl);
+  padding: 1rem 1.125rem;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.hist-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.hist-card span {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--eloan-gray-400);
+  display: block;
+  margin-bottom: .35rem;
+}
+
+.hist-card strong {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--eloan-gray-900);
+  display: block;
+  line-height: 1;
+}
+
+/* ── Modal ───────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, .48);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-box {
+  background: var(--eloan-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 420px;
+  margin: 1rem;
+  border: 1px solid var(--eloan-gray-100);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--eloan-gray-100);
+  background: var(--eloan-gray-50);
+}
+
+.modal-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--eloan-gray-900);
+}
+
+.modal-header button {
+  background: var(--eloan-white);
+  border: 1.5px solid var(--eloan-gray-200);
+  color: var(--eloan-gray-500);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: .875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.modal-header button:hover {
+  background: var(--eloan-red-light);
+  color: var(--eloan-red);
+  border-color: #fecaca;
+}
+
+.modal-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: .875rem;
+}
+
+.modal-footer {
+  padding: .875rem 1.25rem 1.25rem;
+  border-top: 1px solid var(--eloan-gray-100);
+  background: var(--eloan-gray-50);
+  display: flex;
+  gap: .625rem;
+  justify-content: flex-end;
+}
+
+.adjust-product-name {
+  font-size: .9375rem;
+  font-weight: 700;
+  color: var(--eloan-blue);
+  margin-bottom: .25rem;
+}
+
+/* Form inside modal */
+.form-group { display: flex; flex-direction: column; gap: .35rem; }
+
+.form-label {
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--eloan-gray-500);
+}
+
+.form-control {
+  width: 100%;
+  padding: .6rem .875rem;
+  border: 1.5px solid var(--eloan-gray-200);
+  border-radius: var(--radius-md);
+  background: var(--eloan-white);
+  font-family: var(--font-body);
+  font-size: .875rem;
+  color: var(--eloan-gray-800);
+  outline: none;
+  transition: var(--transition);
+}
+
+.form-control:focus {
+  border-color: var(--eloan-blue);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / .1);
+}
+
+/* ── Empty State ─────────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--eloan-gray-400);
+  font-size: .875rem;
+}
+
+.table-footer {
+  font-size: .8rem;
+  color: var(--eloan-gray-500);
+  padding: .5rem .25rem;
+}
+
+/* ── Utility ─────────────────────────────────────────────────── */
+.hidden { display: none !important; }
+
+/* ── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar         { width: 4px; height: 4px; }
+::-webkit-scrollbar-track   { background: var(--eloan-gray-50); }
+::-webkit-scrollbar-thumb   { background: var(--eloan-gray-300); border-radius: 10px; }
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .kpi-grid        { grid-template-columns: 1fr 1fr; }
+  .hist-info-grid  { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 767.98px) {
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-wrap { max-width: 100%; }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .875rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .kpi-grid       { grid-template-columns: 1fr 1fr; }
+  .hist-info-grid { grid-template-columns: 1fr 1fr; }
+  .stock-table    { min-width: 750px; }
+}
+
+@media (max-width: 575.98px) {
+  .page-title { font-size: 1.2rem; }
+}
+
+/* ============================================================
+   stock.css — eLoan SaaS | Stock Module
+   Extends dashboard.css + supplier.css design system
+   Only stock-specific components defined here.
+   ============================================================ */
+
+/* ── KPI Icon Variants (stock-specific colors) ───────────────── */
+.erp-card__header-icon--amber {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.erp-card__header-icon--amber i {
+  color: #d97706;
+}
+
+/* ── Status Chip / Filter Buttons ────────────────────────────── */
+.stock-chip {
+  font-size: .78rem;
+  font-weight: 700;
+  padding: .35rem .875rem;
+  border-radius: 9999px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  transition: all .18s ease;
+  cursor: pointer;
+}
+
+.stock-chip:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+.stock-chip--active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px rgb(37 99 235 / .22);
+}
+
+.stock-chip--active:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
+/* ── ERP Table ───────────────────────────────────────────────── */
+.erp-table {
+  font-size: .875rem;
+}
+
+.erp-table thead th {
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: #64748b;
+  border-bottom: 2px solid #f1f5f9;
+  padding: .875rem 1rem;
+  background: #f8fafc;
+  white-space: nowrap;
+}
+
+.erp-table tbody td {
+  padding: .875rem 1rem;
+  border-bottom: 1px solid #f8fafc;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.erp-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.erp-table tbody tr:hover td {
+  background: #f8fafc;
+}
+
+/* ── Supplier Avatar (small) — for table rows ────────────────── */
+.supplier-avatar-sm {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #eff6ff, #bfdbfe);
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .875rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Category & SKU Badges ───────────────────────────────────── */
+.badge-category {
+  display: inline-block;
+  background: #f5f3ff;
+  color: #7c3aed;
+  font-size: .75rem;
+  font-weight: 600;
+  padding: .2rem .65rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.badge-sku {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: .75rem;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  padding: .2rem .55rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* ── Status Badges (extends supplier badge-status) ───────────── */
+/* badge-status--warning (amber) — not in supplier.css */
+.badge-status--warning {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid rgba(217, 119, 6, .2);
+  animation: pulse-low 2s ease-in-out infinite;
+}
+
+@keyframes pulse-low {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .65; }
+}
+
+/* ── Stock Quantity Progress Bar ─────────────────────────────── */
+.stock-qty-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 72px;
+}
+
+.stock-bar-bg {
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.stock-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width .3s ease;
+}
+
+.stock-bar--green { background: #059669; }
+.stock-bar--amber { background: #d97706; }
+.stock-bar--red   { background: #dc2626; }
+
+/* ── Transaction Type Badges ─────────────────────────────────── */
+.badge-txn {
+  display: inline-flex;
+  align-items: center;
+  padding: .2rem .6rem;
+  border-radius: 6px;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.badge-txn--in  {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid rgba(5, 150, 105, .2);
+}
+
+.badge-txn--out {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid rgba(220, 38, 38, .2);
+}
+
+.badge-txn--adj {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, .2);
+}
+
+/* ── Status Indicator (warning variant) ──────────────────────── */
+/* Extends supplier.css .status-indicator */
+.status-indicator--warning {
+  background: #fffbeb;
+  border: 1px solid rgba(217, 119, 6, .2);
+  border-radius: 10px;
+  padding: .875rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  font-size: .875rem;
+  color: #d97706;
+}
+
+.status-indicator--warning .status-dot {
+  background: #d97706;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, .2);
+}
+
+/* ── Adjust Modal Icon ───────────────────────────────────────── */
+.modal-icon-wrap--blue {
+  width: 44px;
+  height: 44px;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 767.98px) {
+  .erp-table { min-width: 800px; }
+}
+.erp-body{
+    background: var(--eloan-gray-50);
+    font-family: var(--font-body);
+    color: var(--eloan-gray-800);
+    min-height:100vh;
+}
+
+.erp-main{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    margin-left:260px;
+    transition:margin-left .25s ease;
+}
+
+.erp-content{
+    flex:1;
+    padding:1.75rem;
+    max-width:1400px;
+}
+
+@media (max-width:991.98px){
+
+    .erp-main{
+        margin-left:0;
+    }
+
+    .erp-content{
+        padding:1rem;
+    }
+}
+.erp-main{
+    margin-left:260px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+.erp-content{
+    flex:1;
+    padding:24px;
+}
+
+@media(max-width:991px){
+
+    .erp-main{
+        margin-left:0;
+    }
+
+    .erp-content{
+        padding:16px;
+    }
+}

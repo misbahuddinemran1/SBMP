@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Sales Dashboard – eLoan SaaS</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/sales.css}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="erp-body">
+
+<!-- Sidebar -->
+<div th:replace="~{dashboard/fragments/sidebar :: sidebar}"></div>
+
+<!-- Main Wrapper -->
+<div class="erp-main" id="erpMain">
+
+    <!-- Topbar -->
+    <div th:replace="~{dashboard/fragments/topbar :: topbar}"></div>
+
+    <!-- Page Content -->
+    <main class="erp-content">
+
+        <!-- ── PAGE HEADER ──────────────────────────────────── -->
+        <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb breadcrumb-erp mb-1">
+                        <li class="breadcrumb-item"><a th:href="@{/dashboard}"><i class="bi bi-house-door"></i> Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Sales</li>
+                    </ol>
+                </nav>
+                <h1 class="page-title mb-0">Sales Dashboard</h1>
+                <p class="page-subtitle mb-0">Overview of your sales performance</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/sales/list}" class="btn btn-ghost-erp">
+                    <i class="bi bi-list-ul me-2"></i>All Sales
+                </a>
+                <a th:href="@{/sales/new}" class="btn btn-primary-erp">
+                    <i class="bi bi-plus-lg me-2"></i>New Sale
+                </a>
+            </div>
+        </div>
+
+        <!-- ── FLASH MESSAGES ──────────────────────────────── -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- ── KPI CARDS ───────────────────────────────────── -->
+        <div class="row g-3 mb-4">
+
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="erp-kpi-card erp-kpi-card--blue">
+                    <div class="erp-kpi-card__icon">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <p class="erp-kpi-card__label">Total Invoices</p>
+                    <h3 class="erp-kpi-card__value" th:text="${totalInvoices}">0</h3>
+                    <p class="erp-kpi-card__sub">All time</p>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="erp-kpi-card erp-kpi-card--green">
+                    <div class="erp-kpi-card__icon">
+                        <i class="bi bi-bag-check"></i>
+                    </div>
+                    <p class="erp-kpi-card__label">Total Sale</p>
+                    <h3 class="erp-kpi-card__value">
+                        ৳<span th:text="${#numbers.formatDecimal(totalSale,1,'COMMA',2,'POINT')}">0.00</span>
+                    </h3>
+                    <p class="erp-kpi-card__sub">Grand total</p>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="erp-kpi-card erp-kpi-card--teal">
+                    <div class="erp-kpi-card__icon">
+                        <i class="bi bi-check2-circle"></i>
+                    </div>
+                    <p class="erp-kpi-card__label">Total Paid</p>
+                    <h3 class="erp-kpi-card__value">
+                        ৳<span th:text="${#numbers.formatDecimal(totalPaid,1,'COMMA',2,'POINT')}">0.00</span>
+                    </h3>
+                    <p class="erp-kpi-card__sub">Collected</p>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="erp-kpi-card erp-kpi-card--red">
+                    <div class="erp-kpi-card__icon">
+                        <i class="bi bi-exclamation-circle"></i>
+                    </div>
+                    <p class="erp-kpi-card__label">Total Due</p>
+                    <h3 class="erp-kpi-card__value">
+                        ৳<span th:text="${#numbers.formatDecimal(totalDue,1,'COMMA',2,'POINT')}">0.00</span>
+                    </h3>
+                    <p class="erp-kpi-card__sub">Outstanding</p>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="erp-kpi-card erp-kpi-card--violet">
+                    <div class="erp-kpi-card__icon">
+                        <i class="bi bi-calendar-month"></i>
+                    </div>
+                    <p class="erp-kpi-card__label">This Month</p>
+                    <h3 class="erp-kpi-card__value">
+                        ৳<span th:text="${#numbers.formatDecimal(thisMonthTotal,1,'COMMA',2,'POINT')}">0.00</span>
+                    </h3>
+                    <p class="erp-kpi-card__sub">
+                        vs last: ৳<span th:text="${#numbers.formatDecimal(lastMonthTotal,1,'COMMA',2,'POINT')}">0.00</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="erp-kpi-card erp-kpi-card--orange">
+                    <div class="erp-kpi-card__icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <p class="erp-kpi-card__label">Customers</p>
+                    <h3 class="erp-kpi-card__value" th:text="${totalCustomers}">0</h3>
+                    <p class="erp-kpi-card__sub">Active</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── CHARTS ROW ───────────────────────────────────── -->
+        <div class="row g-3 mb-3">
+
+            <!-- Monthly Trend -->
+            <div class="col-lg-8">
+                <div class="erp-card h-100">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon erp-card__header-icon--blue">
+                            <i class="bi bi-bar-chart-line"></i>
+                        </div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Monthly Sales Trend</h5>
+                            <p class="erp-card__subtitle mb-0">Last 6 months overview</p>
+                        </div>
+                    </div>
+                    <div class="erp-card__body">
+                        <canvas id="trendChart" style="max-height:220px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Products -->
+            <div class="col-lg-4">
+                <div class="erp-card h-100">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon erp-card__header-icon--green">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Top 5 Products</h5>
+                            <p class="erp-card__subtitle mb-0">By sales volume</p>
+                        </div>
+                    </div>
+                    <div class="erp-card__body">
+                        <canvas id="prodChart" style="max-height:220px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── BOTTOM ROW: RECENT + DRAFT ──────────────────── -->
+        <div class="row g-3 mb-4">
+
+            <!-- Recent Sales -->
+            <div class="col-lg-7">
+                <div class="erp-card h-100">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon erp-card__header-icon--teal">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Recent Sales</h5>
+                            <p class="erp-card__subtitle mb-0">Latest transactions</p>
+                        </div>
+                        <a th:href="@{/sales/list}" class="btn btn-ghost-erp btn-sm ms-auto">
+                            View All <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                    <div class="erp-card__body p-0">
+
+                        <!-- Empty -->
+                        <div th:if="${#lists.isEmpty(recentSales)}" class="text-center py-5 text-muted">
+                            <i class="bi bi-receipt d-block mb-2" style="font-size:2.5rem;opacity:.2;"></i>
+                            <p class="mb-0 fw-semibold">No sales yet</p>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="table-responsive" th:unless="${#lists.isEmpty(recentSales)}">
+                            <table class="table align-middle mb-0 erp-table">
+                                <thead>
+                                <tr>
+                                    <th>Invoice</th>
+                                    <th>Customer</th>
+                                    <th>Date</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="s : ${recentSales}">
+                                    <td>
+                                        <a th:href="@{'/sales/' + ${s.id}}"
+                                           th:text="${s.saleNumber}"
+                                           class="fw-semibold text-decoration-none"
+                                           style="color:var(--erp-primary);font-size:.875rem;"></a>
+                                    </td>
+                                    <td style="font-size:.875rem;"
+                                        th:text="${s.customer != null ? s.customer.name : '—'}">—</td>
+                                    <td class="text-muted" style="font-size:.8125rem;"
+                                        th:text="${#temporals.format(s.saleDate,'dd MMM yy')}">—</td>
+                                    <td class="fw-semibold" style="font-size:.875rem;font-variant-numeric:tabular-nums;">
+                                        ৳<span th:text="${#numbers.formatDecimal(s.grandTotal,1,'COMMA',2,'POINT')}">0</span>
+                                    </td>
+                                    <td>
+                                        <span class="erp-status-badge"
+                                              th:classappend="${#strings.toLowerCase(s.status.name())}"
+                                              th:text="${s.status}">—</span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Draft Sales -->
+            <div class="col-lg-5">
+                <div class="erp-card h-100">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon erp-card__header-icon--orange">
+                            <i class="bi bi-pencil-square"></i>
+                        </div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Draft Sales</h5>
+                            <p class="erp-card__subtitle mb-0">Pending completion</p>
+                        </div>
+                    </div>
+                    <div class="erp-card__body">
+
+                        <!-- Empty -->
+                        <div th:if="${#lists.isEmpty(draftSales)}" class="text-center py-5 text-muted">
+                            <i class="bi bi-pencil d-block mb-2" style="font-size:2.5rem;opacity:.2;"></i>
+                            <p class="mb-0 fw-semibold">No drafts pending</p>
+                        </div>
+
+                        <!-- Draft List -->
+                        <ul th:unless="${#lists.isEmpty(draftSales)}" class="erp-draft-list">
+                            <li th:each="d : ${draftSales}" class="erp-draft-item">
+                                <div class="erp-draft-item__info">
+                                    <span class="erp-draft-item__num" th:text="${d.saleNumber}">—</span>
+                                    <span class="erp-draft-item__meta"
+                                          th:text="${(d.customer != null ? d.customer.name : 'Walk-in') + ' · ' + #temporals.format(d.saleDate,'dd MMM')}">—</span>
+                                </div>
+                                <div class="erp-draft-item__right">
+                                    <span class="erp-draft-item__amount">
+                                        ৳<span th:text="${#numbers.formatDecimal(d.grandTotal,1,'COMMA',2,'POINT')}">0</span>
+                                    </span>
+                                    <a th:href="@{'/sales/' + ${d.id} + '/edit'}" class="erp-draft-item__edit">
+                                        Edit <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+</div>
+
+<!-- Chart Data -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const trendLabels = /*[[${trendLabels}]]*/ '[]';
+    const trendValues = /*[[${trendValues}]]*/ '[]';
+    const prodLabels  = /*[[${prodLabels}]]*/ '[]';
+    const prodValues  = /*[[${prodValues}]]*/ '[]';
+    /*]]>*/
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/dashboard.js}"></script>
+
+<script>
+    // Shared tick style
+    const tickStyle = { color: '#9ca3af', font: { family: 'inherit', size: 11 } };
+    const gridStyle = { color: '#e9ecef' };
+
+    // Monthly Trend Chart
+    new Chart(document.getElementById('trendChart'), {
+        type: 'bar',
+        data: {
+            labels: JSON.parse(trendLabels),
+            datasets: [{
+                data: JSON.parse(trendValues),
+                backgroundColor: 'rgba(59,130,246,0.12)',
+                borderColor: '#3b82f6',
+                borderWidth: 1.5,
+                borderRadius: 6,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { color: gridStyle.color }, ticks: tickStyle },
+                y: {
+                    grid: { color: gridStyle.color }, ticks: {
+                        ...tickStyle,
+                        callback: v => '৳' + v.toLocaleString()
+                    }
+                }
+            }
+        }
+    });
+
+    // Top Products Chart (horizontal)
+    new Chart(document.getElementById('prodChart'), {
+        type: 'bar',
+        data: {
+            labels: JSON.parse(prodLabels),
+            datasets: [{
+                data: JSON.parse(prodValues),
+                backgroundColor: 'rgba(34,197,94,0.12)',
+                borderColor: '#22c55e',
+                borderWidth: 1.5,
+                borderRadius: 6,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { color: gridStyle.color }, ticks: tickStyle },
+                y: { grid: { display: false }, ticks: tickStyle }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
+
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org" lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8"/>-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>-->
+<!--    <title>Sales Dashboard</title>-->
+<!--    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>-->
+<!--    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>-->
+<!--    <style>-->
+<!--        :root {-->
+<!--            &#45;&#45;bg:        #f4f6fb;-->
+<!--            &#45;&#45;surface:   #ffffff;-->
+<!--            &#45;&#45;border:    #dde2ee;-->
+<!--            &#45;&#45;accent:    #2563eb;-->
+<!--            &#45;&#45;accent2:   #059669;-->
+<!--            &#45;&#45;accent3:   #dc2626;-->
+<!--            &#45;&#45;text:      #1a1f36;-->
+<!--            &#45;&#45;muted:     #6b7280;-->
+<!--            &#45;&#45;radius:    12px;-->
+<!--        }-->
+<!--        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }-->
+<!--        body {-->
+<!--            background: var(&#45;&#45;bg);-->
+<!--            color: var(&#45;&#45;text);-->
+<!--            font-family: 'DM Mono', monospace;-->
+<!--            min-height: 100vh;-->
+<!--        }-->
+<!--        /* NAV */-->
+<!--        .topbar {-->
+<!--            display: flex; align-items: center; justify-content: space-between;-->
+<!--            padding: 16px 32px;-->
+<!--            border-bottom: 1px solid var(&#45;&#45;border);-->
+<!--            background: var(&#45;&#45;surface);-->
+<!--            position: sticky; top: 0; z-index: 100;-->
+<!--        }-->
+<!--        .topbar-logo {-->
+<!--            font-family: 'Syne', sans-serif;-->
+<!--            font-weight: 800; font-size: 1.3rem;-->
+<!--            color: var(&#45;&#45;accent);-->
+<!--            letter-spacing: -0.5px;-->
+<!--        }-->
+<!--        .topbar-logo span { color: var(&#45;&#45;text); }-->
+<!--        .nav-links { display: flex; gap: 8px; }-->
+<!--        .nav-links a {-->
+<!--            color: var(&#45;&#45;muted); text-decoration: none;-->
+<!--            font-size: 0.75rem; padding: 6px 14px;-->
+<!--            border-radius: 6px; transition: all .2s;-->
+<!--            letter-spacing: .5px; text-transform: uppercase;-->
+<!--        }-->
+<!--        .nav-links a:hover, .nav-links a.active {-->
+<!--            background: var(&#45;&#45;border); color: var(&#45;&#45;accent);-->
+<!--        }-->
+<!--        .btn-new {-->
+<!--            background: var(&#45;&#45;accent); color: #fff;-->
+<!--            font-family: 'Syne', sans-serif; font-weight: 700;-->
+<!--            font-size: 0.8rem; padding: 8px 20px;-->
+<!--            border-radius: 8px; text-decoration: none;-->
+<!--            transition: opacity .2s; letter-spacing: .3px;-->
+<!--        }-->
+<!--        .btn-new:hover { opacity: .85; }-->
+
+<!--        /* LAYOUT */-->
+<!--        .main { padding: 32px; max-width: 1400px; margin: 0 auto; }-->
+
+<!--        /* ALERTS */-->
+<!--        .alert {-->
+<!--            padding: 12px 16px; border-radius: var(&#45;&#45;radius);-->
+<!--            font-size: 0.82rem; margin-bottom: 20px;-->
+<!--        }-->
+<!--        .alert-success { background: #dcfce7; border: 1px solid #16a34a; color: var(&#45;&#45;accent2); }-->
+<!--        .alert-error   { background: #fee2e2; border: 1px solid #dc2626; color: var(&#45;&#45;accent3); }-->
+
+<!--        /* KPI GRID */-->
+<!--        .kpi-grid {-->
+<!--            display: grid;-->
+<!--            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));-->
+<!--            gap: 16px; margin-bottom: 28px;-->
+<!--        }-->
+<!--        .kpi-card {-->
+<!--            background: var(&#45;&#45;surface);-->
+<!--            border: 1px solid var(&#45;&#45;border);-->
+<!--            border-radius: var(&#45;&#45;radius);-->
+<!--            padding: 22px 20px;-->
+<!--            position: relative; overflow: hidden;-->
+<!--            transition: border-color .2s;-->
+<!--        }-->
+<!--        .kpi-card:hover { border-color: var(&#45;&#45;accent); }-->
+<!--        .kpi-card::before {-->
+<!--            content: '';-->
+<!--            position: absolute; top: 0; left: 0; right: 0; height: 3px;-->
+<!--        }-->
+<!--        .kpi-card.yellow::before { background: var(&#45;&#45;accent); }-->
+<!--        .kpi-card.green::before  { background: var(&#45;&#45;accent2); }-->
+<!--        .kpi-card.red::before    { background: var(&#45;&#45;accent3); }-->
+<!--        .kpi-card.blue::before   { background: #60a0f0; }-->
+<!--        .kpi-card.purple::before { background: #a060f0; }-->
+<!--        .kpi-label {-->
+<!--            font-size: 0.68rem; letter-spacing: 1.5px;-->
+<!--            text-transform: uppercase; color: var(&#45;&#45;muted);-->
+<!--            margin-bottom: 10px;-->
+<!--        }-->
+<!--        .kpi-value {-->
+<!--            font-family: 'Syne', sans-serif;-->
+<!--            font-weight: 800; font-size: 1.7rem;-->
+<!--            color: var(&#45;&#45;text); line-height: 1;-->
+<!--        }-->
+<!--        .kpi-sub {-->
+<!--            font-size: 0.7rem; color: var(&#45;&#45;muted);-->
+<!--            margin-top: 6px;-->
+<!--        }-->
+
+<!--        /* CHARTS ROW */-->
+<!--        .charts-row {-->
+<!--            display: grid;-->
+<!--            grid-template-columns: 2fr 1fr;-->
+<!--            gap: 16px; margin-bottom: 28px;-->
+<!--        }-->
+<!--        .card {-->
+<!--            background: var(&#45;&#45;surface);-->
+<!--            border: 1px solid var(&#45;&#45;border);-->
+<!--            border-radius: var(&#45;&#45;radius); padding: 24px;-->
+<!--        }-->
+<!--        .card-title {-->
+<!--            font-family: 'Syne', sans-serif;-->
+<!--            font-weight: 700; font-size: 0.9rem;-->
+<!--            color: var(&#45;&#45;text); margin-bottom: 20px;-->
+<!--            display: flex; align-items: center; gap: 8px;-->
+<!--        }-->
+<!--        .card-title .dot {-->
+<!--            width: 8px; height: 8px; border-radius: 50%;-->
+<!--            background: var(&#45;&#45;accent);-->
+<!--        }-->
+<!--        canvas { max-height: 220px; }-->
+
+<!--        /* BOTTOM ROW */-->
+<!--        .bottom-row {-->
+<!--            display: grid;-->
+<!--            grid-template-columns: 1fr 1fr;-->
+<!--            gap: 16px;-->
+<!--        }-->
+
+<!--        /* TABLE */-->
+<!--        table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }-->
+<!--        thead tr { border-bottom: 1px solid var(&#45;&#45;border); }-->
+<!--        th {-->
+<!--            font-size: 0.65rem; letter-spacing: 1.2px;-->
+<!--            text-transform: uppercase; color: var(&#45;&#45;muted);-->
+<!--            padding: 8px 10px; text-align: left; font-weight: 400;-->
+<!--        }-->
+<!--        td {-->
+<!--            padding: 10px 10px; border-bottom: 1px solid #eef1f8;-->
+<!--            color: var(&#45;&#45;text);-->
+<!--        }-->
+<!--        tbody tr:hover td { background: #f0f4ff99; }-->
+<!--        .sale-num { color: var(&#45;&#45;accent); font-weight: 500; cursor: pointer; }-->
+<!--        .sale-num:hover { text-decoration: underline; }-->
+
+<!--        /* BADGE */-->
+<!--        .badge {-->
+<!--            display: inline-block; padding: 2px 8px;-->
+<!--            border-radius: 4px; font-size: 0.65rem;-->
+<!--            font-weight: 500; letter-spacing: .5px; text-transform: uppercase;-->
+<!--        }-->
+<!--        .badge-draft      { background:#eff6ff; color:#3b82f6; border:1px solid #bfdbfe; }-->
+<!--        .badge-completed  { background:#dcfce7; color:var(&#45;&#45;accent2); border:1px solid #16a34a; }-->
+<!--        .badge-cancelled  { background:#fee2e2; color:var(&#45;&#45;accent3); border:1px solid #dc2626; }-->
+<!--        .badge-returned   { background:#fff7ed; color:#f0a040; border:1px solid #d97706; }-->
+
+<!--        /* DRAFT SALES */-->
+<!--        .draft-list { list-style: none; }-->
+<!--        .draft-item {-->
+<!--            display: flex; justify-content: space-between; align-items: center;-->
+<!--            padding: 10px 0; border-bottom: 1px solid var(&#45;&#45;border);-->
+<!--            font-size: 0.78rem;-->
+<!--        }-->
+<!--        .draft-item:last-child { border-bottom: none; }-->
+<!--        .draft-item .d-name { color: var(&#45;&#45;text); }-->
+<!--        .draft-item .d-meta { color: var(&#45;&#45;muted); font-size: 0.7rem; margin-top: 2px; }-->
+<!--        .draft-item .d-amount { color: var(&#45;&#45;accent); font-weight: 600; text-align: right; }-->
+<!--        .draft-item a { color: var(&#45;&#45;accent); font-size: 0.68rem; text-decoration: none; }-->
+<!--        .draft-item a:hover { text-decoration: underline; }-->
+
+<!--        /* EMPTY */-->
+<!--        .empty { text-align: center; color: var(&#45;&#45;muted); padding: 32px; font-size: 0.78rem; }-->
+
+<!--        @media (max-width: 900px) {-->
+<!--            .charts-row, .bottom-row { grid-template-columns: 1fr; }-->
+<!--            .kpi-grid { grid-template-columns: repeat(2, 1fr); }-->
+<!--            .main { padding: 16px; }-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+
+<!--&lt;!&ndash; TOPBAR &ndash;&gt;-->
+<!--<nav class="topbar">-->
+<!--    <div class="topbar-logo">SBMP<span> / Sales</span></div>-->
+<!--    <div class="nav-links">-->
+<!--        <a th:href="@{/sales}" class="active">Dashboard</a>-->
+<!--        <a th:href="@{/sales/list}">All Sales</a>-->
+<!--    </div>-->
+<!--    <a th:href="@{/sales/new}" class="btn-new">+ New Sale</a>-->
+<!--</nav>-->
+
+<!--<div class="main">-->
+
+<!--    &lt;!&ndash; ALERTS &ndash;&gt;-->
+<!--    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>-->
+<!--    <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>-->
+
+<!--    &lt;!&ndash; KPI CARDS &ndash;&gt;-->
+<!--    <div class="kpi-grid">-->
+<!--        <div class="kpi-card yellow">-->
+<!--            <div class="kpi-label">Total Invoices</div>-->
+<!--            <div class="kpi-value" th:text="${totalInvoices}">0</div>-->
+<!--            <div class="kpi-sub">All time</div>-->
+<!--        </div>-->
+<!--        <div class="kpi-card green">-->
+<!--            <div class="kpi-label">Total Sale</div>-->
+<!--            <div class="kpi-value">৳<span th:text="${#numbers.formatDecimal(totalSale,1,'COMMA',2,'POINT')}">0.00</span></div>-->
+<!--            <div class="kpi-sub">Grand total</div>-->
+<!--        </div>-->
+<!--        <div class="kpi-card blue">-->
+<!--            <div class="kpi-label">Total Paid</div>-->
+<!--            <div class="kpi-value">৳<span th:text="${#numbers.formatDecimal(totalPaid,1,'COMMA',2,'POINT')}">0.00</span></div>-->
+<!--            <div class="kpi-sub">Collected</div>-->
+<!--        </div>-->
+<!--        <div class="kpi-card red">-->
+<!--            <div class="kpi-label">Total Due</div>-->
+<!--            <div class="kpi-value">৳<span th:text="${#numbers.formatDecimal(totalDue,1,'COMMA',2,'POINT')}">0.00</span></div>-->
+<!--            <div class="kpi-sub">Outstanding</div>-->
+<!--        </div>-->
+<!--        <div class="kpi-card purple">-->
+<!--            <div class="kpi-label">This Month</div>-->
+<!--            <div class="kpi-value">৳<span th:text="${#numbers.formatDecimal(thisMonthTotal,1,'COMMA',2,'POINT')}">0.00</span></div>-->
+<!--            <div class="kpi-sub">vs last: ৳<span th:text="${#numbers.formatDecimal(lastMonthTotal,1,'COMMA',2,'POINT')}">0.00</span></div>-->
+<!--        </div>-->
+<!--        <div class="kpi-card yellow">-->
+<!--            <div class="kpi-label">Customers</div>-->
+<!--            <div class="kpi-value" th:text="${totalCustomers}">0</div>-->
+<!--            <div class="kpi-sub">Active</div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; CHARTS ROW &ndash;&gt;-->
+<!--    <div class="charts-row">-->
+<!--        <div class="card">-->
+<!--            <div class="card-title"><span class="dot"></span> Monthly Sales Trend (6 Months)</div>-->
+<!--            <canvas id="trendChart"></canvas>-->
+<!--        </div>-->
+<!--        <div class="card">-->
+<!--            <div class="card-title"><span class="dot" style="background:var(&#45;&#45;accent2)"></span> Top 5 Products</div>-->
+<!--            <canvas id="prodChart"></canvas>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; BOTTOM ROW &ndash;&gt;-->
+<!--    <div class="bottom-row">-->
+<!--        &lt;!&ndash; RECENT SALES &ndash;&gt;-->
+<!--        <div class="card">-->
+<!--            <div class="card-title"><span class="dot" style="background:#60a0f0"></span> Recent Sales</div>-->
+<!--            <div th:if="${#lists.isEmpty(recentSales)}" class="empty">No sales yet</div>-->
+<!--            <table th:unless="${#lists.isEmpty(recentSales)}">-->
+<!--                <thead>-->
+<!--                    <tr>-->
+<!--                        <th>Invoice</th>-->
+<!--                        <th>Customer</th>-->
+<!--                        <th>Date</th>-->
+<!--                        <th>Total</th>-->
+<!--                        <th>Status</th>-->
+<!--                    </tr>-->
+<!--                </thead>-->
+<!--                <tbody>-->
+<!--                    <tr th:each="s : ${recentSales}">-->
+<!--                        <td>-->
+<!--                            <a th:href="@{'/sales/' + ${s.id}}"-->
+<!--                               th:text="${s.saleNumber}"-->
+<!--                               class="sale-num"></a>-->
+<!--                        </td>-->
+<!--                        <td th:text="${s.customer != null ? s.customer.name : '—'}">—</td>-->
+<!--                        <td th:text="${#temporals.format(s.saleDate,'dd MMM yy')}">—</td>-->
+<!--                        <td>৳<span th:text="${#numbers.formatDecimal(s.grandTotal,1,'COMMA',2,'POINT')}">0</span></td>-->
+<!--                        <td>-->
+<!--                            <span th:class="'badge badge-' + ${#strings.toLowerCase(s.status.name())}"-->
+<!--                                  th:text="${s.status}"></span>-->
+<!--                        </td>-->
+<!--                    </tr>-->
+<!--                </tbody>-->
+<!--            </table>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; DRAFT SALES &ndash;&gt;-->
+<!--        <div class="card">-->
+<!--            <div class="card-title"><span class="dot" style="background:var(&#45;&#45;accent3)"></span> Draft Sales</div>-->
+<!--            <div th:if="${#lists.isEmpty(draftSales)}" class="empty">No drafts pending</div>-->
+<!--            <ul th:unless="${#lists.isEmpty(draftSales)}" class="draft-list">-->
+<!--                <li th:each="d : ${draftSales}" class="draft-item">-->
+<!--                    <div>-->
+<!--                        <div class="d-name" th:text="${d.saleNumber}">—</div>-->
+<!--                        <div class="d-meta"-->
+<!--                             th:text="${(d.customer != null ? d.customer.name : 'Walk-in') + ' · ' + #temporals.format(d.saleDate,'dd MMM')}">—</div>-->
+<!--                    </div>-->
+<!--                    <div style="text-align:right">-->
+<!--                        <div class="d-amount">৳<span th:text="${#numbers.formatDecimal(d.grandTotal,1,'COMMA',2,'POINT')}">0</span></div>-->
+<!--                        <a th:href="@{'/sales/' + ${d.id} + '/edit'}">Edit →</a>-->
+<!--                    </div>-->
+<!--                </li>-->
+<!--            </ul>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
+<!--<script th:inline="javascript">-->
+<!--    const trendLabels = /*[[${trendLabels}]]*/ '[]';-->
+<!--    const trendValues = /*[[${trendValues}]]*/ '[]';-->
+<!--    const prodLabels  = /*[[${prodLabels}]]*/ '[]';-->
+<!--    const prodValues  = /*[[${prodValues}]]*/ '[]';-->
+
+<!--    const chartDefaults = {-->
+<!--        color: '#7a8099',-->
+<!--        borderColor: '#dde2ee',-->
+<!--        plugins: { legend: { display: false } },-->
+<!--        scales: {-->
+<!--            x: { grid: { color: '#e8edf5' }, ticks: { color: '#9ca3af', font: { family:'DM Mono', size:10 } } },-->
+<!--            y: { grid: { color: '#e8edf5' }, ticks: { color: '#9ca3af', font: { family:'DM Mono', size:10 },-->
+<!--                    callback: v => '৳' + v.toLocaleString() } }-->
+<!--        }-->
+<!--    };-->
+
+<!--    // Trend Chart-->
+<!--    new Chart(document.getElementById('trendChart'), {-->
+<!--        type: 'bar',-->
+<!--        data: {-->
+<!--            labels: JSON.parse(trendLabels),-->
+<!--            datasets: [{-->
+<!--                data: JSON.parse(trendValues),-->
+<!--                backgroundColor: 'rgba(240,192,64,0.18)',-->
+<!--                borderColor: '#f0c040',-->
+<!--                borderWidth: 1.5,-->
+<!--                borderRadius: 4,-->
+<!--            }]-->
+<!--        },-->
+<!--        options: {-->
+<!--            ...chartDefaults,-->
+<!--            plugins: { legend: { display: false } },-->
+<!--        }-->
+<!--    });-->
+
+<!--    // Product Chart (horizontal bar)-->
+<!--    new Chart(document.getElementById('prodChart'), {-->
+<!--        type: 'bar',-->
+<!--        data: {-->
+<!--            labels: JSON.parse(prodLabels),-->
+<!--            datasets: [{-->
+<!--                data: JSON.parse(prodValues),-->
+<!--                backgroundColor: 'rgba(61,224,160,0.18)',-->
+<!--                borderColor: '#3de0a0',-->
+<!--                borderWidth: 1.5,-->
+<!--                borderRadius: 4,-->
+<!--            }]-->
+<!--        },-->
+<!--        options: {-->
+<!--            indexAxis: 'y',-->
+<!--            plugins: { legend: { display: false } },-->
+<!--            scales: {-->
+<!--                x: { grid: { color: '#e8edf5' }, ticks: { color: '#9ca3af', font: { family:'DM Mono', size:10 } } },-->
+<!--                y: { grid: { display: false }, ticks: { color: '#6b7280', font: { family:'DM Mono', size:10 } } }-->
+<!--            }-->
+<!--        }-->
+<!--    });-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->

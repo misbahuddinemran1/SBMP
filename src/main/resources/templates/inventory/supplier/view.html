@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${supplier?.supplierName} + ' – eLoan SaaS'">Supplier Details – eLoan SaaS</title>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet"
+          th:href="@{/css/dashboard.css}">
+
+    <link rel="stylesheet" th:href="@{/css/supplier.css}"/>
+</head>
+<body class="erp-body">
+
+<!-- Sidebar -->
+<div th:replace="~{dashboard/fragments/sidebar :: sidebar}"></div>
+
+<!-- Main Wrapper -->
+<div class="erp-main" id="erpMain">
+
+    <!-- Topbar -->
+    <div th:replace="~{dashboard/fragments/topbar :: topbar}"></div>
+
+    <!-- Page Content -->
+    <main class="erp-content">
+
+        <!-- Page Header -->
+        <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb breadcrumb-erp mb-1">
+                        <li class="breadcrumb-item"><a th:href="@{/dashboard}"><i class="bi bi-house-door"></i> Dashboard</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/inventory/supplier}">Suppliers</a></li>
+                        <li class="breadcrumb-item active" aria-current="page" th:text="${supplier?.supplierName}">Supplier Detail</li>
+                    </ol>
+                </nav>
+                <h1 class="page-title mb-0" th:text="${supplier?.supplierName}">Supplier Name</h1>
+                <p class="page-subtitle mb-0" th:text="${supplier?.companyName != null ? supplier.companyName : 'Independent Supplier'}">Company</p>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <a th:href="@{/inventory/supplier}" class="btn btn-ghost-erp">
+                    <i class="bi bi-arrow-left me-2"></i>Back
+                </a>
+                <a sec:authorize="hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')"
+                   th:href="@{/inventory/supplier/{id}/edit(id=${supplier?.id})}"
+                   class="btn btn-primary-erp">
+                    <i class="bi bi-pencil me-2"></i>Edit Supplier
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- Main Details -->
+            <div class="col-lg-8">
+
+                <!-- Identity Card -->
+                <div class="erp-card mb-4">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon">
+                            <i class="bi bi-person-badge-fill"></i>
+                        </div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Supplier Profile</h5>
+                            <p class="erp-card__subtitle mb-0">Identification &amp; contact info</p>
+                        </div>
+                    </div>
+                    <div class="erp-card__body">
+
+                        <!-- Avatar Row -->
+                        <div class="supplier-profile-banner mb-4">
+                            <div class="supplier-avatar-lg" th:text="${supplier?.supplierName != null ? #strings.substring(supplier.supplierName,0,1).toUpperCase() : 'S'}">S</div>
+                            <div>
+                                <h4 class="mb-1 fw-semibold" th:text="${supplier?.supplierName}">–</h4>
+                                <p class="text-muted mb-2" th:text="${supplier?.companyName != null ? supplier.companyName : '–'}">–</p>
+                                <span class="badge-status badge-status--active" th:if="${supplier?.active}">
+                                    <i class="bi bi-circle-fill me-1"></i>Active
+                                </span>
+                                <span class="badge-status badge-status--inactive" th:unless="${supplier?.active}">
+                                    <i class="bi bi-circle-fill me-1"></i>Inactive
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <div class="detail-item__icon"><i class="bi bi-person"></i></div>
+                                <div class="detail-item__body">
+                                    <span class="detail-item__label">Supplier Name</span>
+                                    <span class="detail-item__value" th:text="${supplier?.supplierName != null ? supplier.supplierName : '–'}">–</span>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-item__icon"><i class="bi bi-building"></i></div>
+                                <div class="detail-item__body">
+                                    <span class="detail-item__label">Company Name</span>
+                                    <span class="detail-item__value" th:text="${supplier?.companyName != null ? supplier.companyName : '–'}">–</span>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-item__icon"><i class="bi bi-telephone"></i></div>
+                                <div class="detail-item__body">
+                                    <span class="detail-item__label">Phone</span>
+                                    <a th:if="${supplier?.phone != null}"
+                                       th:href="'tel:' + ${supplier.phone}"
+                                       class="detail-item__value link-subtle"
+                                       th:text="${supplier.phone}">–</a>
+                                    <span class="detail-item__value text-muted" th:unless="${supplier?.phone != null}">–</span>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-item__icon"><i class="bi bi-envelope"></i></div>
+                                <div class="detail-item__body">
+                                    <span class="detail-item__label">Email</span>
+                                    <a th:if="${supplier?.email != null}"
+                                       th:href="'mailto:' + ${supplier.email}"
+                                       class="detail-item__value link-subtle"
+                                       th:text="${supplier.email}">–</a>
+                                    <span class="detail-item__value text-muted" th:unless="${supplier?.email != null}">–</span>
+                                </div>
+                            </div>
+                            <div class="detail-item detail-item--full">
+                                <div class="detail-item__icon"><i class="bi bi-geo-alt"></i></div>
+                                <div class="detail-item__body">
+                                    <span class="detail-item__label">Address</span>
+                                    <span class="detail-item__value" th:text="${supplier?.address != null ? supplier.address : '–'}">–</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sidebar Panel -->
+            <div class="col-lg-4">
+
+                <!-- Meta Card -->
+                <div class="erp-card mb-4">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon erp-card__header-icon--slate">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Record Info</h5>
+                        </div>
+                    </div>
+                    <div class="erp-card__body">
+                        <div class="meta-item">
+                            <span class="meta-item__label"><i class="bi bi-calendar-plus me-2"></i>Created</span>
+                            <span class="meta-item__value"
+                                  th:text="${supplier?.createdAt != null ? #temporals.format(supplier.createdAt, 'dd MMM yyyy, HH:mm') : '–'}">–</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-item__label"><i class="bi bi-calendar-check me-2"></i>Last Updated</span>
+                            <span class="meta-item__value"
+                                  th:text="${supplier?.updatedAt != null ? #temporals.format(supplier.updatedAt, 'dd MMM yyyy, HH:mm') : '–'}">–</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-item__label"><i class="bi bi-hash me-2"></i>Supplier ID</span>
+                            <span class="meta-item__value text-muted small" th:text="${supplier?.id}">–</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Card -->
+                <div class="erp-card">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon erp-card__header-icon--green" th:if="${supplier?.active}">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <div class="erp-card__header-icon erp-card__header-icon--red" th:unless="${supplier?.active}">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Status</h5>
+                        </div>
+                    </div>
+                    <div class="erp-card__body">
+                        <div class="status-indicator" th:classappend="${supplier?.active} ? 'status-indicator--active' : 'status-indicator--inactive'">
+                            <div class="status-dot"></div>
+                            <span th:text="${supplier?.active} ? 'This supplier is active and available in purchase orders.' : 'This supplier is inactive and hidden from purchase flows.'">–</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Danger Zone (Admin/Owner only) -->
+        <div sec:authorize="hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')" class="erp-card danger-zone-card mt-4">
+            <div class="erp-card__body">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div>
+                        <h6 class="text-danger mb-1 fw-semibold"><i class="bi bi-exclamation-octagon me-2"></i>Danger Zone</h6>
+                        <p class="text-muted small mb-0">Permanently delete this supplier. This action cannot be undone.</p>
+                    </div>
+                    <button type="button"
+                            class="btn btn-danger-erp"
+                            th:data-id="${supplier?.id}"
+                            th:data-name="${supplier?.supplierName}"
+                            onclick="openDeleteModal(this)">
+                        <i class="bi bi-trash3 me-2"></i>Delete Supplier
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content erp-modal">
+            <div class="modal-header border-0 pb-0">
+                <div class="modal-icon-wrap">
+                    <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                </div>
+            </div>
+            <div class="modal-body text-center pt-2">
+                <h5 class="modal-title mb-2" id="deleteModalLabel">Delete Supplier?</h5>
+                <p class="text-muted small mb-0">
+                    You are about to delete <strong id="deleteSupplierName">this supplier</strong>.
+                    This action cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center gap-2">
+                <button type="button" class="btn btn-ghost-erp" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-danger-erp" id="deleteConfirmBtn">
+                        <span class="btn-text">Delete</span>
+                        <span class="btn-spinner d-none"><i class="bi bi-arrow-clockwise spin me-1"></i>Deleting…</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/supplier.js}"></script>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

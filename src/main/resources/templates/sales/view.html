@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="'Sale ' + ${sale.saleNumber}">Sale Detail</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --bg:        #f4f6fb; --surface:   #ffffff; --border:    #dde2ee;
+            --accent:    #2563eb; --accent2:   #059669; --accent3:   #dc2626;
+            --text:      #1a1f36; --muted:     #6b7280; --radius:12px;
+        }
+        *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+        body { background:var(--bg); color:var(--text); font-family:'DM Mono',monospace; min-height:100vh; }
+
+        /* NAV */
+        .topbar {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:16px 32px; border-bottom:1px solid var(--border);
+            background:var(--surface); position:sticky; top:0; z-index:100;
+        }
+        .topbar-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem; color:var(--accent); }
+        .topbar-logo span { color:var(--text); }
+        .nav-links { display:flex; gap:8px; }
+        .nav-links a {
+            color:var(--muted); text-decoration:none; font-size:0.75rem;
+            padding:6px 14px; border-radius:6px; transition:all .2s;
+            letter-spacing:.5px; text-transform:uppercase;
+        }
+        .nav-links a:hover { background:var(--border); color:var(--accent); }
+
+        .main { padding:32px; max-width:1100px; margin:0 auto; }
+
+        /* ALERTS */
+        .alert { padding:12px 16px; border-radius:var(--radius); font-size:0.82rem; margin-bottom:20px; }
+        .alert-success { background:#dcfce7; border:1px solid #16a34a; color:var(--accent2); }
+        .alert-error   { background:#fee2e2; border:1px solid #dc2626; color:var(--accent3); }
+
+        /* PAGE HEADER */
+        .page-header {
+            display:flex; align-items:flex-start; justify-content:space-between;
+            margin-bottom:28px; gap:16px; flex-wrap:wrap;
+        }
+        .page-header h1 { font-family:'Syne',sans-serif; font-weight:800; font-size:1.6rem; }
+        .breadcrumb { color:var(--muted); font-size:0.75rem; margin-bottom:4px; }
+        .breadcrumb a { color:var(--accent); text-decoration:none; }
+        .header-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+
+        /* BADGE */
+        .badge {
+            display:inline-block; padding:4px 12px; border-radius:6px;
+            font-size:0.7rem; font-weight:600; letter-spacing:.8px;
+            text-transform:uppercase;
+        }
+        .badge-draft      { background:#eff6ff; color:#3b82f6; border:1px solid #bfdbfe; }
+        .badge-completed  { background:#dcfce7; color:var(--accent2); border:1px solid #16a34a; }
+        .badge-cancelled  { background:#fee2e2; color:var(--accent3); border:1px solid #dc2626; }
+        .badge-returned   { background:#fff7ed; color:#f0a040; border:1px solid #d97706; }
+        .badge-pending    { background:#eff6ff; color:#3b82f6; border:1px solid #bfdbfe; }
+        .badge-approved   { background:#dcfce7; color:var(--accent2); border:1px solid #16a34a; }
+        .badge-rejected   { background:#fee2e2; color:var(--accent3); border:1px solid #dc2626; }
+
+        /* BUTTONS */
+        .btn {
+            font-family:'DM Mono',monospace; font-size:0.78rem; padding:8px 18px;
+            border-radius:8px; cursor:pointer; text-decoration:none;
+            display:inline-flex; align-items:center; gap:6px; transition:all .2s; border:none;
+        }
+        .btn-primary { background:var(--accent);color:#fff; font-weight:600; }
+        .btn-primary:hover { opacity:.85; }
+        .btn-outline { background:transparent; border:1px solid var(--border); color:var(--muted); }
+        .btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+        .btn-danger { background:transparent; border:1px solid #fee2e2; color:var(--accent3); }
+        .btn-danger:hover { background:#fee2e2; }
+
+        /* TWO COLUMN LAYOUT */
+        .view-grid { display:grid; grid-template-columns:2fr 1fr; gap:20px; }
+
+        /* CARD */
+        .card {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:var(--radius); padding:24px; margin-bottom:16px;
+        }
+        .card-title {
+            font-family:'Syne',sans-serif; font-weight:700; font-size:0.9rem;
+            color:var(--text); margin-bottom:20px;
+            display:flex; align-items:center; gap:8px;
+        }
+        .card-title .dot { width:8px; height:8px; border-radius:50%; background:var(--accent); }
+
+        /* DETAIL FIELDS */
+        .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 24px; }
+        .detail-item {}
+        .detail-label { font-size:0.65rem; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+        .detail-value { font-size:0.85rem; color:var(--text); }
+
+        /* TABLES */
+        table { width:100%; border-collapse:collapse; font-size:0.78rem; }
+        thead tr { border-bottom:1px solid var(--border); }
+        th {
+            font-size:0.63rem; letter-spacing:1px; text-transform:uppercase;
+            color:var(--muted); padding:8px 10px; text-align:left; font-weight:400;
+        }
+        td { padding:10px; border-bottom:1px solid #eef1f8; }
+        tbody tr:hover td { background:#f0f4ff55; }
+
+        /* SUMMARY */
+        .summary-box { font-size:0.82rem; }
+        .summary-row {
+            display:flex; justify-content:space-between;
+            padding:9px 0; border-bottom:1px solid var(--border);
+        }
+        .summary-row:last-child { border-bottom:none; }
+        .summary-label { color:var(--muted); }
+        .summary-value { font-weight:500; }
+        .summary-total .summary-label { font-family:'Syne',sans-serif; font-weight:700; color:var(--text); }
+        .summary-total .summary-value { font-family:'Syne',sans-serif; font-weight:800; color:var(--accent); font-size:1.1rem; }
+        .summary-due   .summary-value { color:var(--accent3); }
+        .summary-paid  .summary-value { color:var(--accent2); }
+
+        /* RETURN FORM */
+        .return-form { border-top:1px solid var(--border); margin-top:16px; padding-top:16px; }
+        .return-form select, .return-form input[type=number], .return-form input[type=text] {
+            background:#f8faff; border:1px solid var(--border); color:var(--text);
+            font-family:'DM Mono',monospace; font-size:0.78rem; padding:8px 10px;
+            border-radius:7px; outline:none; transition:border-color .2s; width:100%; margin-bottom:8px;
+        }
+        .return-form select:focus,
+        .return-form input:focus { border-color:var(--accent); }
+        .return-form select option { background:#f8faff; }
+        .return-form label { font-size:0.65rem; letter-spacing:1px; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:4px; margin-top:8px; }
+
+        /* COLLAPSE TOGGLE */
+        .section-toggle { cursor:pointer; user-select:none; }
+        .section-toggle:hover .card-title { color:var(--accent); }
+
+        /* EMPTY */
+        .empty { text-align:center; color:var(--muted); padding:32px; font-size:0.78rem; }
+
+        @media (max-width:900px) {
+            .view-grid { grid-template-columns:1fr; }
+            .main { padding:16px; }
+            .detail-grid { grid-template-columns:1fr; }
+        }
+
+        /* PRINT */
+        @media print {
+            .topbar, .header-actions, .return-form, .btn { display:none !important; }
+            body { background:#fff; color:#fff; }
+            .card { border:1px solid #ccc; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+    <div class="topbar-logo">SBMP<span> / Sales</span></div>
+    <div class="nav-links">
+        <a th:href="@{/sales}">Dashboard</a>
+        <a th:href="@{/sales/list}">All Sales</a>
+    </div>
+</nav>
+
+<div class="main">
+    <!-- ALERTS -->
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <div>
+            <div class="breadcrumb"><a th:href="@{/sales/list}">Sales</a> / <span th:text="${sale.saleNumber}"></span></div>
+            <h1 th:text="${sale.saleNumber}">INV-0001</h1>
+            <span th:class="'badge badge-' + ${#strings.toLowerCase(sale.status.name())}"
+                  th:text="${sale.status}" style="margin-top:8px;display:inline-block;"></span>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-outline" onclick="window.print()">Print</button>
+            <a th:if="${sale.status.name() == 'DRAFT'}"
+               th:href="@{'/sales/' + ${sale.id} + '/edit'}"
+               class="btn btn-primary">Edit</a>
+            <form th:if="${sale.status.name() != 'CANCELLED' and sale.status.name() != 'RETURNED'}"
+                  th:action="@{'/sales/' + ${sale.id} + '/cancel'}"
+                  method="post" style="display:inline;"
+                  onsubmit="return confirm('Cancel this sale?')">
+                <button type="submit" class="btn btn-danger">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="view-grid">
+        <!-- LEFT -->
+        <div>
+            <!-- SALE INFO -->
+            <div class="card">
+                <div class="card-title"><span class="dot"></span> Sale Info</div>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Invoice No</div>
+                        <div class="detail-value" th:text="${sale.saleNumber}">—</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Sale Date</div>
+                        <div class="detail-value" th:text="${#temporals.format(sale.saleDate,'dd MMMM yyyy')}">—</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Customer</div>
+                        <div class="detail-value" th:text="${sale.customerName != null ? sale.customerName : 'Walk-in'}">—</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Phone</div>
+                        <div class="detail-value" th:text="${sale.customerPhone != null ? sale.customerPhone : '—'}">—</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Created</div>
+                        <div class="detail-value" th:text="${#temporals.format(sale.createdAt,'dd MMM yyyy HH:mm')}">—</div>
+                    </div>
+                    <div class="detail-item" th:if="${sale.notes != null and !#strings.isEmpty(sale.notes)}">
+                        <div class="detail-label">Notes</div>
+                        <div class="detail-value" th:text="${sale.notes}">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ITEMS -->
+            <div class="card">
+                <div class="card-title"><span class="dot" style="background:var(--accent2)"></span> Items</div>
+                <div th:if="${#lists.isEmpty(sale.items)}" class="empty">No items</div>
+                <table th:unless="${#lists.isEmpty(sale.items)}">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Discount</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item, i : ${sale.items}">
+                            <td th:text="${i.index + 1}">1</td>
+                            <td>
+                                <div th:text="${item.productName}">—</div>
+                                <div style="font-size:0.68rem;color:var(--muted);" th:text="${item.categoryName}">—</div>
+                            </td>
+                            <td th:text="${item.saleQty}">0</td>
+                            <td>৳<span th:text="${#numbers.formatDecimal(item.unitPrice,1,'COMMA',2,'POINT')}">0.00</span></td>
+                            <td>
+                                <span th:if="${item.discountAmount != null and item.discountAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                                    ৳<span th:text="${#numbers.formatDecimal(item.discountAmount,1,'COMMA',2,'POINT')}">0.00</span>
+                                    <span th:if="${item.discountPercentage != null}"
+                                          style="color:var(--muted);font-size:0.7rem"
+                                          th:text="'(' + ${#numbers.formatDecimal(item.discountPercentage,1,'COMMA',2,'POINT')} + '%)'"></span>
+                                </span>
+                                <span th:unless="${item.discountAmount != null and item.discountAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0}"
+                                      style="color:var(--muted)">—</span>
+                            </td>
+                            <td style="color:var(--accent); font-weight:600;">
+                                ৳<span th:text="${#numbers.formatDecimal(item.itemTotal,1,'COMMA',2,'POINT')}">0.00</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PAYMENTS -->
+            <div class="card">
+                <div class="card-title"><span class="dot" style="background:#60a0f0"></span> Payments</div>
+                <div th:if="${#lists.isEmpty(sale.payments)}" class="empty">No payments recorded</div>
+                <table th:unless="${#lists.isEmpty(sale.payments)}">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Ref No</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${sale.payments}">
+                            <td th:text="${p.paymentMethod}">—</td>
+                            <td style="color:var(--accent2);">৳<span th:text="${#numbers.formatDecimal(p.amount,1,'COMMA',2,'POINT')}">0.00</span></td>
+                            <td th:text="${p.paymentDate != null ? #temporals.format(p.paymentDate,'dd MMM yyyy') : '—'}">—</td>
+                            <td th:text="${p.referenceNo != null ? p.referenceNo : '—'}">—</td>
+                            <td th:text="${p.notes != null ? p.notes : '—'}">—</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- RETURNS -->
+            <div class="card" th:if="${!#lists.isEmpty(sale.returns)}">
+                <div class="card-title"><span class="dot" style="background:var(--accent3)"></span> Returns</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="r : ${sale.returns}">
+                            <td>
+                                <div th:text="${r.productName}">—</div>
+                                <div style="font-size:0.68rem;color:var(--muted);" th:text="${r.reason}">—</div>
+                            </td>
+                            <td th:text="${r.returnQty}">0</td>
+                            <td>৳<span th:text="${#numbers.formatDecimal(r.unitPrice,1,'COMMA',2,'POINT')}">0.00</span></td>
+                            <td style="color:var(--accent3);">৳<span th:text="${#numbers.formatDecimal(r.returnTotal,1,'COMMA',2,'POINT')}">0.00</span></td>
+                            <td th:text="${r.returnDate != null ? #temporals.format(r.returnDate,'dd MMM') : '—'}">—</td>
+                            <td>
+                                <span th:class="'badge badge-' + ${#strings.toLowerCase(r.status.name())}"
+                                      th:text="${r.status}"></span>
+                            </td>
+                            <td>
+                                <div th:if="${r.status.name() == 'PENDING'}" style="display:flex;gap:4px;">
+                                    <form th:action="@{'/sales/return/' + ${r.id} + '/status'}" method="post" style="display:inline;">
+                                        <input type="hidden" name="saleId" th:value="${sale.id}"/>
+                                        <input type="hidden" name="status" value="APPROVED"/>
+                                        <button type="submit" class="btn btn-outline" style="font-size:0.68rem;padding:4px 10px;color:var(--accent2);border-color:#16a34a;">✓ Approve</button>
+                                    </form>
+                                    <form th:action="@{'/sales/return/' + ${r.id} + '/status'}" method="post" style="display:inline;">
+                                        <input type="hidden" name="saleId" th:value="${sale.id}"/>
+                                        <input type="hidden" name="status" value="REJECTED"/>
+                                        <button type="submit" class="btn btn-danger" style="font-size:0.68rem;padding:4px 10px;">✕ Reject</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div>
+            <!-- FINANCIAL SUMMARY -->
+            <div class="card" style="position:sticky;top:80px">
+                <div class="card-title"><span class="dot" style="background:var(--accent3)"></span> Financial Summary</div>
+                <div class="summary-box">
+                    <div class="summary-row">
+                        <span class="summary-label">Subtotal</span>
+                        <span class="summary-value">৳<span th:text="${#numbers.formatDecimal(sale.subtotal,1,'COMMA',2,'POINT')}">0.00</span></span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Item Discounts</span>
+                        <span class="summary-value">-৳<span th:text="${#numbers.formatDecimal(sale.totalDiscount,1,'COMMA',2,'POINT')}">0.00</span></span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Invoice Discount</span>
+                        <span class="summary-value">-৳<span th:text="${#numbers.formatDecimal(sale.invoiceDiscount,1,'COMMA',2,'POINT')}">0.00</span></span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span class="summary-label">Grand Total</span>
+                        <span class="summary-value">৳<span th:text="${#numbers.formatDecimal(sale.grandTotal,1,'COMMA',2,'POINT')}">0.00</span></span>
+                    </div>
+                    <div class="summary-row summary-paid">
+                        <span class="summary-label">Paid</span>
+                        <span class="summary-value">৳<span th:text="${#numbers.formatDecimal(sale.paidAmount,1,'COMMA',2,'POINT')}">0.00</span></span>
+                    </div>
+                    <div class="summary-row summary-due">
+                        <span class="summary-label">Due</span>
+                        <span class="summary-value">৳<span th:text="${#numbers.formatDecimal(sale.dueAmount,1,'COMMA',2,'POINT')}">0.00</span></span>
+                    </div>
+                </div>
+
+                <!-- RETURN REQUEST FORM -->
+                <div th:if="${sale.status.name() == 'COMPLETED' and !#lists.isEmpty(sale.items)}" class="return-form">
+                    <div class="card-title" style="margin-bottom:12px;"><span class="dot" style="background:var(--accent3)"></span> Request Return</div>
+                    <form th:action="@{'/sales/' + ${sale.id} + '/return'}" method="post">
+                        <label>Product</label>
+                        <select name="productId" required>
+                            <option value="">Select…</option>
+                            <option th:each="item : ${sale.items}"
+                                    th:value="${item.productId}"
+                                    th:text="${item.productName + ' (sold: ' + item.saleQty + ')'}"></option>
+                        </select>
+                        <label>Return Qty</label>
+                        <input type="number" name="qty" min="1" value="1" required/>
+                        <label>Reason (Optional)</label>
+                        <input type="text" name="reason" placeholder="e.g. Defective item"/>
+                        <button type="submit" class="btn btn-danger" style="width:100%;justify-content:center;margin-top:8px;">Submit Return</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${stock?.product?.name} + ' – Stock History – eLoan SaaS'">Stock History – eLoan SaaS</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/stock.css}">
+</head>
+<body class="eloan-body">
+
+<!-- Sidebar -->
+<div th:replace="~{dashboard/fragments/sidebar :: sidebar}"></div>
+
+<!-- Main Wrapper -->
+<div class="eloan-main-wrapper" id="erpMain">
+
+    <!-- Topbar -->
+    <div th:replace="~{dashboard/fragments/topbar :: topbar}"></div>
+
+    <!-- Page Content -->
+    <main class="eloan-content">
+
+        <!-- ── PAGE HEADER ──────────────────────────────────── -->
+        <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb breadcrumb-erp mb-1">
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/dashboard}"><i class="bi bi-house-door"></i> Dashboard</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/inventory}">Inventory</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/inventory/stock}">Stock</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page"
+                            th:text="${stock?.product?.name}">History</li>
+                    </ol>
+                </nav>
+                <h1 class="page-title mb-0" th:text="${stock?.product?.name}">Product Name</h1>
+                <p class="page-subtitle mb-0">Stock transaction history</p>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <a th:href="@{/inventory/stock}" class="btn btn-ghost-erp">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Stock
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+
+            <!-- ── LEFT: Main Table ───────────────────────────── -->
+            <div class="col-lg-8">
+
+                <!-- Transaction History Card -->
+                <div class="erp-card">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Transaction History</h5>
+                            <p class="erp-card__subtitle mb-0"
+                               th:text="${history != null ? history.size() : 0} + ' total transactions'">0 transactions</p>
+                        </div>
+                    </div>
+
+                    <div class="erp-card__body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 erp-table">
+                                <thead>
+                                <tr>
+                                    <th style="width:40px">#</th>
+                                    <th>Type</th>
+                                    <th>Before</th>
+                                    <th>Change</th>
+                                    <th>After</th>
+                                    <th>Reference</th>
+                                    <th>Unit Price</th>
+                                    <th>Notes</th>
+                                    <th>Date</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                <tr th:each="t, stat : ${history}" class="t-row">
+
+                                    <td class="text-muted small" th:text="${stat.index + 1}">1</td>
+
+                                    <!-- Type -->
+                                    <td>
+                                        <span class="badge-txn"
+                                              th:classappend="${t.transactionType.name().contains('IN') or t.transactionType.name() == 'MANUAL_IN'} ? 'badge-txn--in' : (${t.transactionType.name() == 'ADJUSTMENT'} ? 'badge-txn--adj' : 'badge-txn--out')"
+                                              th:text="${t.transactionType.name().replace('_',' ')}">TYPE</span>
+                                    </td>
+
+                                    <!-- Before -->
+                                    <td class="text-muted" style="font-family:monospace;font-size:.8125rem;"
+                                        th:text="${t.quantityBefore}">0</td>
+
+                                    <!-- Change -->
+                                    <td>
+                                        <span style="font-family:monospace;font-size:.875rem;font-weight:700;"
+                                              th:classappend="${t.quantityChanged >= 0 ? 'text-success' : 'text-danger'}"
+                                              th:text="${t.quantityChanged >= 0 ? '+' + t.quantityChanged : t.quantityChanged}">+0</span>
+                                    </td>
+
+                                    <!-- After -->
+                                    <td class="fw-bold" style="font-family:monospace;font-size:.8125rem;"
+                                        th:text="${t.quantityAfter}">0</td>
+
+                                    <!-- Reference -->
+                                    <td>
+                                        <div class="d-flex flex-column gap-1">
+                                            <span class="text-muted" style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;"
+                                                  th:text="${t.referenceType != null ? t.referenceType : '—'}">—</span>
+                                            <span class="text-primary" style="font-size:.8125rem;font-family:monospace;"
+                                                  th:text="${t.referenceNumber != null ? t.referenceNumber : ''}"></span>
+                                        </div>
+                                    </td>
+
+                                    <!-- Unit Price -->
+                                    <td style="font-size:.875rem;"
+                                        th:text="${t.unitPrice != null ? '৳' + #numbers.formatDecimal(t.unitPrice,1,2) : '—'}">—</td>
+
+                                    <!-- Notes -->
+                                    <td class="text-muted" style="font-size:.8125rem;"
+                                        th:text="${t.notes != null ? t.notes : '—'}">—</td>
+
+                                    <!-- Date -->
+                                    <td class="text-muted" style="font-size:.8125rem;white-space:nowrap;"
+                                        th:text="${#temporals.format(t.createdAt, 'dd MMM yy, hh:mm a')}">—</td>
+
+                                </tr>
+
+                                <tr th:if="${history == null or history.isEmpty()}">
+                                    <td colspan="9" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox d-block mb-2" style="font-size:2rem;opacity:.3;"></i>
+                                        No transactions recorded yet.
+                                    </td>
+                                </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div><!-- /.erp-card -->
+
+            </div><!-- /.col-lg-8 -->
+
+            <!-- ── RIGHT: Info Panel ─────────────────────────── -->
+            <div class="col-lg-4">
+
+                <!-- Product Profile Card -->
+                <div class="erp-card mb-4">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Product Info</h5>
+                            <p class="erp-card__subtitle mb-0">Stock details</p>
+                        </div>
+                    </div>
+                    <div class="erp-card__body">
+
+                        <!-- Product avatar row -->
+                        <div class="supplier-profile-banner mb-3">
+                            <div class="supplier-avatar-lg"
+                                 th:text="${stock?.product?.name != null ? #strings.substring(stock.product.name,0,1).toUpperCase() : 'P'}">P</div>
+                            <div>
+                                <h5 class="mb-1 fw-semibold" th:text="${stock?.product?.name}">—</h5>
+                                <span class="badge-status"
+                                      th:classappend="${stock?.currentQuantity <= 0 ? 'badge-status--inactive' : (stock?.currentQuantity <= stock?.minimumStockAlert ? 'badge-status--warning' : 'badge-status--active')}"
+                                      th:text="${stock?.currentQuantity <= 0 ? 'Out of Stock' : (stock?.currentQuantity <= stock?.minimumStockAlert ? 'Low Stock' : 'In Stock')}">—</span>
+                            </div>
+                        </div>
+
+                        <!-- Detail rows -->
+                        <div class="detail-grid">
+
+                            <div class="detail-item detail-item--full">
+                                <div class="detail-item__icon"><i class="bi bi-archive"></i></div>
+                                <div class="detail-item__body">
+                                    <span class="detail-item__label">Current Stock</span>
+                                    <span class="detail-item__value fw-bold"
+                                          th:text="${stock?.currentQuantity}">0</span>
+                                </div>
+                            </div>
+
+                            <div class="detail-item detail-item--full">
+                                <div class="detail-item__icon"><i class="bi bi-exclamation-triangle"></i></div>
+                                <div class="detail-item__body">
+                                    <span class="detail-item__label">Minimum Alert</span>
+                                    <span class="detail-item__value"
+                                          th:text="${stock?.minimumStockAlert}">5</span>
+                                </div>
+                            </div>
+
+                            <div class="detail-item detail-item--full">
+                                <div class="detail-item__icon"><i class="bi bi-cash-coin"></i></div>
+                                <div class="detail-item__body">
+                                    <span class="detail-item__label">Average Cost</span>
+                                    <span class="detail-item__value"
+                                          th:text="${stock?.averageCost != null ? '৳' + #numbers.formatDecimal(stock.averageCost,1,2) : '—'}">—</span>
+                                </div>
+                            </div>
+
+                            <div class="detail-item detail-item--full">
+                                <div class="detail-item__icon"><i class="bi bi-tag"></i></div>
+                                <div class="detail-item__body">
+                                    <span class="detail-item__label">Last Purchase Price</span>
+                                    <span class="detail-item__value"
+                                          th:text="${stock?.lastPurchasePrice != null ? '৳' + #numbers.formatDecimal(stock.lastPurchasePrice,1,2) : '—'}">—</span>
+                                </div>
+                            </div>
+
+                            <div class="detail-item detail-item--full">
+                                <div class="detail-item__icon"><i class="bi bi-rulers"></i></div>
+                                <div class="detail-item__body">
+                                    <span class="detail-item__label">Unit</span>
+                                    <span class="detail-item__value"
+                                          th:text="${stock?.unit != null ? stock.unit : '—'}">pcs</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div><!-- /.erp-card -->
+
+                <!-- Status Card -->
+                <div class="erp-card">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon erp-card__header-icon--green"
+                             th:if="${stock?.currentQuantity > stock?.minimumStockAlert}">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <div class="erp-card__header-icon erp-card__header-icon--amber"
+                             th:if="${stock?.currentQuantity > 0 and stock?.currentQuantity <= stock?.minimumStockAlert}">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                        </div>
+                        <div class="erp-card__header-icon erp-card__header-icon--red"
+                             th:if="${stock?.currentQuantity <= 0}">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Stock Status</h5>
+                        </div>
+                    </div>
+                    <div class="erp-card__body">
+                        <div class="status-indicator"
+                             th:classappend="${stock?.currentQuantity <= 0 ? 'status-indicator--inactive' : (stock?.currentQuantity <= stock?.minimumStockAlert ? 'status-indicator--warning' : 'status-indicator--active')}">
+                            <div class="status-dot"></div>
+                            <span th:text="${stock?.currentQuantity <= 0 ?
+                                'This product is out of stock. Reorder immediately.' :
+                                (stock?.currentQuantity <= stock?.minimumStockAlert ?
+                                    'Stock is running low. Consider reordering soon.' :
+                                    'Stock level is healthy and sufficient.')}">—</span>
+                        </div>
+                    </div>
+                </div><!-- /.erp-card -->
+
+            </div><!-- /.col-lg-4 -->
+
+        </div><!-- /.row -->
+
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

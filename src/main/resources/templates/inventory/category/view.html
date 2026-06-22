@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Detail — eLoan SaaS</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/category.css}">
+</head>
+
+<body>
+<div class="app-shell">
+
+    <div th:replace="~{dashboard/fragments/sidebar :: sidebar}"></div>
+    <div th:replace="~{dashboard/fragments/sidebar :: sidebar-overlay}"></div>
+
+    <div class="main-area" id="mainArea">
+        <div th:replace="~{dashboard/fragments/topbar :: topbar}"></div>
+
+        <main class="page-content" role="main">
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <nav class="page-breadcrumb">
+                        <a th:href="@{/dashboard}"><i class="bi bi-grid-1x2 me-1"></i>Dashboard</a>
+                        <span class="bc-sep"><i class="bi bi-chevron-right"></i></span>
+                        <a th:href="@{/inventory}">Inventory</a>
+                        <span class="bc-sep"><i class="bi bi-chevron-right"></i></span>
+                        <a th:href="@{/inventory/category}">Categories</a>
+                        <span class="bc-sep"><i class="bi bi-chevron-right"></i></span>
+                        <span class="bc-active" th:text="${category.name}">Category Name</span>
+                    </nav>
+                    <h1 class="page-title">Category Detail</h1>
+                    <p class="page-subtitle">Full information about this category</p>
+                </div>
+
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <!-- Edit Button -->
+                    <a sec:authorize="hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')"
+                       th:href="@{/inventory/category/{id}/edit(id=${category.id})}"
+                       class="btn-sm-primary">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+
+                    <!-- Back -->
+                    <a th:href="@{/inventory/category}" class="btn-sm-outline">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </a>
+                </div>
+            </div>
+
+            <div class="row g-3">
+
+                <!-- ===== Detail Card ===== -->
+                <div class="col-12 col-lg-8">
+                    <div class="form-card animate-in">
+
+                        <div class="form-card-header">
+                            <div class="form-card-header-icon">
+                                <i class="bi bi-tag-fill"></i>
+                            </div>
+                            <div>
+                                <div class="form-card-title" th:text="${category.name}">Category Name</div>
+                                <div class="cat-slug"
+                                     th:text="${#numbers.formatInteger(category.id, 4)}">
+                                </div>
+                            </div>
+                            <span th:class="${'status-badge ms-auto ' + (category.active ? 'active' : 'inactive')}"
+                                  th:text="${category.active ? 'Active' : 'Inactive'}">Active</span>
+                        </div>
+
+                        <div class="form-card-body">
+                            <div class="row g-4">
+
+                                <!-- Category Name -->
+                                <div class="col-12 col-md-6">
+                                    <div class="form-label-custom">Category Name</div>
+                                    <div style="padding:10px 14px;background:var(--bg-surface);border-radius:var(--radius-md);border:1px solid var(--border);font-weight:600;color:var(--text-primary);"
+                                         th:text="${category.name}">Electronics</div>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="col-12 col-md-6">
+                                    <div class="form-label-custom">Status</div>
+                                    <div style="padding:10px 14px;background:var(--bg-surface);border-radius:var(--radius-md);border:1px solid var(--border);">
+                    <span th:class="${'status-badge ' + (category.active ? 'active' : 'inactive')}"
+                          th:text="${category.active ? 'Active' : 'Inactive'}">Active</span>
+                                    </div>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="col-12">
+                                    <div class="form-label-custom">Description</div>
+                                    <div style="padding:12px 14px;background:var(--bg-surface);border-radius:var(--radius-md);border:1px solid var(--border);color:var(--text-secondary);line-height:1.6;min-height:80px;"
+                                         th:text="${category.description != null and !#strings.isEmpty(category.description) ? category.description : 'No description provided.'}">
+                                        Description here
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Footer Actions -->
+                        <div class="form-card-footer">
+                            <a sec:authorize="hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')"
+                               th:href="@{/inventory/category/{id}/edit(id=${category.id})}"
+                               class="btn-primary-custom">
+                                <i class="bi bi-pencil"></i> Edit Category
+                            </a>
+
+                            <button sec:authorize="hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')"
+                                    type="button"
+                                    class="btn-danger-custom"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal">
+                                <i class="bi bi-trash3"></i> Delete
+                            </button>
+
+                            <a th:href="@{/inventory/category}" class="btn-outline-custom ms-auto">
+                                <i class="bi bi-arrow-left"></i> Back to List
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ===== Meta Info Card ===== -->
+                <div class="col-12 col-lg-4">
+                    <div class="form-card animate-in">
+
+                        <div class="form-card-header">
+                            <div class="form-card-header-icon" style="background:var(--primary-light);color:var(--primary);">
+                                <i class="bi bi-info-circle-fill"></i>
+                            </div>
+                            <div>
+                                <div class="form-card-title">Meta Information</div>
+                                <div class="form-card-subtitle">System details</div>
+                            </div>
+                        </div>
+
+                        <div class="form-card-body" style="padding-top:16px;">
+                            <div style="display:flex;flex-direction:column;gap:14px;">
+
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border-light);">
+                                    <span style="font-size:0.8rem;color:var(--text-muted);font-weight:500;">Category ID</span>
+                                    <code style="font-size:0.78rem;background:var(--bg-surface);padding:2px 8px;border-radius:4px;color:var(--primary);"
+                                          th:text="${#numbers.formatInteger(category.id, 4)}">
+                                        #CAT-0001
+                                    </code>
+                                </div>
+
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border-light);">
+                                    <span style="font-size:0.8rem;color:var(--text-muted);font-weight:500;">Total Products</span>
+                                    <span style="font-size:1rem;font-weight:700;color:var(--text-primary);"
+                                          th:text="${productCount ?: 0}">0</span>
+                                </div>
+
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border-light);">
+                                    <span style="font-size:0.8rem;color:var(--text-muted);font-weight:500;">Created At</span>
+                                    <span style="font-size:0.8rem;font-weight:600;color:var(--text-primary);"
+                                          th:text="${#temporals.format(category.createdAt, 'dd MMM yyyy, hh:mm a')}">
+                    15 May 2026
+                  </span>
+                                </div>
+
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <span style="font-size:0.8rem;color:var(--text-muted);font-weight:500;">Updated At</span>
+                                    <span style="font-size:0.8rem;font-weight:600;color:var(--text-primary);"
+                                          th:text="${category.updatedAt != null ? #temporals.format(category.updatedAt, 'dd MMM yyyy, hh:mm a') : '—'}">
+                    17 May 2026
+                  </span>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div><!-- /row -->
+
+        </main>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade delete-modal" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" style="box-shadow:none;"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <div class="delete-modal-icon"><i class="bi bi-trash3-fill"></i></div>
+                <h5 class="delete-modal-title">Delete Category?</h5>
+                <p class="delete-modal-text">
+                    You are about to delete
+                    <strong th:text="${category.name}" style="color:var(--text-primary);">Category</strong>.
+                    This cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn-outline-custom" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Cancel
+                </button>
+                <form th:action="@{/inventory/category/{id}/delete(id=${category.id})}" method="post" style="margin:0;">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button type="submit" class="btn-danger-custom">
+                        <i class="bi bi-trash3"></i> Yes, Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/dashboard.js}"></script>
+<script th:src="@{/js/category.js}"></script>
+</body>
+</html>

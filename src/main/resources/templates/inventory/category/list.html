@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="en">
+
+<!--/*
+    eLoan SaaS — inventory/category/list.html
+    Inventory Category Management — List Page
+    Spring Boot + Thymeleaf | Bootstrap 5
+*/-->
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="eLoan SaaS — Category Management">
+  <title>Category Management — eLoan SaaS</title>
+
+  <!-- Bootstrap 5 CSS -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Dashboard Core CSS -->
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="../../dashboard.css">
+
+  <!-- Category Module CSS -->
+  <link rel="stylesheet" th:href="@{/css/category.css}" href="category.css">
+</head>
+
+<body>
+
+<!-- =============================================
+     APP SHELL
+     ============================================= -->
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <div th:replace="~{dashboard/fragments/sidebar :: sidebar}"></div>
+  <div th:replace="~{dashboard/fragments/sidebar :: sidebar-overlay}"></div>
+
+  <!-- MAIN AREA -->
+  <div class="main-area" id="mainArea">
+
+    <!-- TOPBAR -->
+    <div th:replace="~{dashboard/fragments/topbar :: topbar}"></div>
+
+    <!-- PAGE CONTENT -->
+    <main class="page-content" role="main">
+
+      <!-- ===== PAGE HEADER ===== -->
+      <div class="page-header">
+        <div>
+          <!-- Breadcrumb -->
+          <nav class="page-breadcrumb" aria-label="Breadcrumb">
+            <a th:href="@{/dashboard}"><i class="bi bi-grid-1x2 me-1"></i>Dashboard</a>
+            <span class="bc-sep"><i class="bi bi-chevron-right"></i></span>
+            <a th:href="@{/inventory}">Inventory</a>
+            <span class="bc-sep"><i class="bi bi-chevron-right"></i></span>
+            <span class="bc-active">Categories</span>
+          </nav>
+          <h1 class="page-title">Category Management</h1>
+          <p class="page-subtitle">Manage your inventory product categories</p>
+        </div>
+
+        <!-- Add Button: SUPER_ADMIN or BUSINESS_OWNER only -->
+        <div sec:authorize="hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')">
+          <a th:href="@{/inventory/category/add}" class="btn-sm-primary">
+            <i class="bi bi-plus-lg"></i> Add Category
+          </a>
+        </div>
+      </div>
+
+      <!-- ===== FLASH MESSAGES ===== -->
+      <div th:if="${successMessage}" class="flash-alert success animate-in" data-auto-dismiss="4000">
+        <i class="bi bi-check-circle-fill"></i>
+        <span th:text="${successMessage}">Category saved successfully.</span>
+      </div>
+
+      <div th:if="${errorMessage}" class="flash-alert danger animate-in" data-auto-dismiss="5000">
+        <i class="bi bi-x-circle-fill"></i>
+        <span th:text="${errorMessage}">An error occurred.</span>
+      </div>
+
+      <!-- ===== TABLE CARD ===== -->
+      <div class="table-card animate-in">
+
+        <!-- Card Header: Toolbar -->
+        <div class="table-card-header">
+          <div class="table-card-title">
+            <i class="bi bi-tag"></i>
+            All Categories
+            <span class="table-count-badge" id="categoryCount"
+                  th:text="${categories != null ? categories.totalElements : 0}">0</span>
+          </div>
+
+          <!-- Toolbar -->
+          <div class="module-toolbar">
+            <!-- Search -->
+            <div class="toolbar-search">
+              <i class="bi bi-search toolbar-search-icon"></i>
+              <input type="text"
+                     id="categorySearch"
+                     placeholder="Search categories... (/)"
+                     autocomplete="off"
+                     aria-label="Search categories">
+            </div>
+
+            <!-- Status Filter -->
+            <div class="toolbar-filter">
+              <select id="statusFilter" aria-label="Filter by status">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+
+            <!-- Export (optional) -->
+            <button class="btn-sm-outline d-none d-md-inline-flex"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="bottom"
+                    title="Export CSV">
+              <i class="bi bi-download"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive-wrapper">
+          <table class="cat-table" aria-label="Category list">
+            <thead>
+            <tr>
+              <th>#</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+            </thead>
+
+            <tbody id="categoryTableBody">
+
+            <!-- ==========================================
+                 Thymeleaf Loop: categories
+                 ========================================== -->
+            <tr th:each="category, stat : ${categories}"
+                th:attr="data-searchable=${category.name + ' ' + (category.description ?: '')},
+             data-status=${category.active ? 'active' : 'inactive'}">
+
+              <!-- ID -->
+              <td>
+                <span class="id-cell" th:text="${stat.index + 1 + (categories.number * categories.size)}">1</span>
+              </td>
+
+              <!-- Category Name -->
+              <td>
+                <div class="cat-name-cell">
+                  <div class="cat-icon">
+                    <i class="bi bi-tag-fill"></i>
+                  </div>
+                  <div>
+                    <div class="cat-name" th:text="${category.name}">Electronics</div>
+                    <div class="cat-slug"
+                         th:text="${'#CAT-' + category.id}">
+                      #CAT-1
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Description -->
+              <td>
+                  <span class="desc-cell"
+                        th:text="${category.description != null and !#strings.isEmpty(category.description) ? category.description : '—'}">
+                    Product description here
+                  </span>
+              </td>
+
+              <!-- Status -->
+              <td>
+                  <span th:class="${'status-badge ' + (category.active ? 'active' : 'inactive')}"
+                        th:text="${category.active ? 'Active' : 'Inactive'}">
+                    Active
+                  </span>
+              </td>
+
+              <!-- Created Date -->
+              <td>
+                  <span class="date-cell"
+                        th:text="${#temporals.format(category.createdAt, 'dd MMM, yyyy')}">
+                    15 May, 2026
+                  </span>
+              </td>
+
+              <!-- Actions -->
+              <td>
+                <div class="action-cell">
+
+                  <!-- View: all roles -->
+                  <a th:href="@{/inventory/category/{id}(id=${category.id})}"
+                     class="action-btn view"
+                     data-bs-toggle="tooltip"
+                     title="View Details">
+                    <i class="bi bi-eye"></i>
+                  </a>
+
+                  <!-- Edit: SUPER_ADMIN, BUSINESS_OWNER only -->
+                  <a sec:authorize="hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')"
+                     th:href="@{/inventory/category/{id}/edit(id=${category.id})}"
+                     class="action-btn edit"
+                     data-bs-toggle="tooltip"
+                     title="Edit Category">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+
+                  <!-- Delete: SUPER_ADMIN, BUSINESS_OWNER only -->
+                  <!-- Delete -->
+                  <button sec:authorize="hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')"
+                          type="button"
+                          class="action-btn delete"
+                          data-bs-toggle="modal"
+                          data-bs-target="#deleteModal"
+                          th:attr="data-delete-id=${category.id},
+                 data-delete-name=${category.name}">
+
+                    <i class="bi bi-trash"></i>
+
+                  </button>
+                </div>
+              </td>
+
+            </tr>
+            <!-- /th:each -->
+
+            </tbody>
+          </table>
+
+          <!-- Empty State (shown when no data OR JS search returns 0) -->
+          <div id="emptyState"
+               th:class="${(categories == null or categories.isEmpty()) ? '' : 'd-none'}"
+               class="empty-state">
+            <div class="empty-state-icon">
+              <i class="bi bi-tag"></i>
+            </div>
+            <h3 class="empty-state-title">No Categories Found</h3>
+            <p class="empty-state-text">
+              You haven't added any categories yet. Start by creating your first inventory category.
+            </p>
+            <a sec:authorize="hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')"
+               th:href="@{/inventory/category/add}"
+               class="btn-sm-primary">
+              <i class="bi bi-plus-lg"></i> Add First Category
+            </a>
+          </div>
+
+        </div><!-- /table-responsive-wrapper -->
+
+        <!-- ===== PAGINATION ===== -->
+        <div th:if="${categories != null and categories.totalPages > 1}"
+             class="pagination-wrapper">
+
+          <div class="pagination-info">
+            Showing
+            <strong th:text="${categories.number * categories.size + 1}">1</strong>
+            –
+            <strong th:text="${categories.number * categories.size + categories.numberOfElements}">10</strong>
+            of
+            <strong th:text="${categories.totalElements}">50</strong>
+            categories
+          </div>
+
+          <ul class="custom-pagination">
+
+            <!-- Previous -->
+            <li th:classappend="${categories.first ? 'disabled' : ''}">
+              <a th:href="${categories.first ? '#' : '/inventory/category?page=' + (categories.number - 1)}"
+                 aria-label="Previous page">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            </li>
+
+            <!-- Page Numbers -->
+            <th:block th:each="i : ${#numbers.sequence(0, categories.totalPages - 1)}">
+              <li th:classappend="${i == categories.number ? 'active' : ''}">
+                <a th:if="${i != categories.number}"
+                   th:href="@{/inventory/category(page=${i})}"
+                   th:text="${i + 1}">1</a>
+                <span th:if="${i == categories.number}" th:text="${i + 1}">1</span>
+              </li>
+            </th:block>
+
+            <!-- Next -->
+            <li th:classappend="${categories.last ? 'disabled' : ''}">
+              <a th:href="${categories.last ? '#' : '/inventory/category?page=' + (categories.number + 1)}"
+                 aria-label="Next page">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+
+          </ul>
+        </div><!-- /pagination -->
+
+      </div><!-- /table-card -->
+
+    </main><!-- /page-content -->
+
+  </div><!-- /main-area -->
+
+</div><!-- /app-shell -->
+
+<!-- =============================================
+     DELETE CONFIRMATION MODAL
+     ============================================= -->
+<div class="modal fade delete-modal" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                style="box-shadow:none;"></button>
+      </div>
+      <div class="modal-body pt-0">
+        <div class="delete-modal-icon">
+          <i class="bi bi-trash3-fill"></i>
+        </div>
+        <h5 class="delete-modal-title">Delete Category?</h5>
+        <p class="delete-modal-text">
+          You are about to delete
+          <strong id="deleteTargetName" style="color:var(--text-primary);">this category</strong>.
+          This action cannot be undone and may affect associated products.
+        </p>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button"
+                class="btn-outline-custom"
+                data-bs-dismiss="modal">
+          <i class="bi bi-x-lg"></i> Cancel
+        </button>
+
+        <form id="deleteForm"
+              method="post"
+              style="margin:0;">
+
+          <!-- CSRF -->
+          <input type="hidden"
+                 th:name="${_csrf.parameterName}"
+                 th:value="${_csrf.token}">
+
+          <button type="submit"
+                  class="btn-danger-custom">
+
+            <i class="bi bi-trash3"></i>
+            Yes, Delete
+
+          </button>
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================
+     SCRIPTS
+     ============================================= -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmRA1MeTdCMTlJldpGBMRa55pGBc"
+        crossorigin="anonymous"></script>
+
+<script th:src="@{/js/dashboard.js}" src="../../dashboard.js"></script>
+<script th:src="@{/js/category.js}"></script>
+
+</body>
+</html>

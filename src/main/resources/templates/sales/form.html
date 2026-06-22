@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>New Sales Invoice · ERP</title>
+
+    <!-- Bootstrap 5 + Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+
+    <!-- ERP Invoice Styles -->
+    <link rel="stylesheet" th:href="@{/css/sales.css}"/>
+</head>
+
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     LAYOUT SHELL
+     ══════════════════════════════════════════════════════════ -->
+<div class="d-flex" id="appShell">
+
+    <!-- SIDEBAR -->
+    <div th:replace="~{dashboard/fragments/sidebar :: sidebar}"></div>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="flex-grow-1 overflow-auto" id="mainContent">
+
+        <!-- TOPBAR -->
+        <div th:replace="~{dashboard/fragments/topbar :: topbar}"></div>
+
+
+        <!-- Hidden cancel URL -->
+        <input type="hidden" id="cancelUrl" th:value="@{/sales}"/>
+        <!-- ══════════════════════════════════════
+             SERVER DATA STORES (hidden JSON blobs)
+             Read by sales.js on init
+             ══════════════════════════════════════ -->
+        <!-- Product Data Store -->
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            const PRODUCT_DATA = [
+                /*[# th:each="p : ${products}"]*/
+                {
+                    id:    /*[[${p.id}]]*/ 0,
+                    name:  /*[[${p.name}]]*/ '',
+                    price: /*[[${p.sellingPrice}]]*/ 0,
+                    stock: /*[[${p.stockQuantity}]]*/ 0,
+                    unit:  /*[[${p.unit}]]*/ ''
+                },
+                /*[/]*/
+            ];
+
+            const CUSTOMER_DATA = [
+                /*[# th:each="c : ${customers}"]*/
+                {
+                    id:           /*[[${c.id}]]*/ 0,
+                    name:         /*[[${c.name}]]*/ '',
+                    mobile:       /*[[${c.mobile}]]*/ '',
+                    code:         /*[[${c.code != null ? c.customerCode : ''}]]*/ '',
+                    email:        /*[[${c.email}]]*/ '',
+                    address:      /*[[${c.address}]]*/ '',
+                    customerType: /*[[${c.customerType}]]*/ ''
+                },
+                /*[/]*/
+            ];
+            /*]]>*/
+        </script>
+
+
+        <!-- ══════════════════════════════════════
+             INVOICE WRAPPER
+             ══════════════════════════════════════ -->
+        <div class="invoice-wrapper">
+
+            <!-- ── PAGE HEADER ── -->
+            <div class="invoice-page-header">
+                <div>
+                    <h1 class="page-title">
+                        <i class="bi bi-receipt" style="color:var(--erp-primary)"></i>
+                        New Sales Invoice
+                        <span class="title-badge">Draft</span>
+                    </h1>
+                    <div class="breadcrumb-erp">
+                        <a th:href="@{/dashboard}">Dashboard</a> /
+                        <a th:href="@{/sales}">Sales</a> /
+                        New Invoice
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+          <span class="status-pill draft">
+            <span class="status-dot"></span>Draft
+          </span>
+                    <span style="font-size:12px;color:var(--text-muted);"
+                          id="currentDateDisplay"
+                          th:text="${#temporals.format(#temporals.createNow(), 'dd MMM yyyy, HH:mm')}">
+          </span>
+                </div>
+            </div>
+
+            <!-- ── WORKFLOW STEPPER ── -->
+            <div class="workflow-stepper">
+                <div class="workflow-step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div>
+                        <div class="step-label">Customer</div>
+                        <div class="step-desc">Select &amp; verify</div>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+
+                <div class="workflow-step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div>
+                        <div class="step-label">Products</div>
+                        <div class="step-desc">Add line items</div>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+
+                <div class="workflow-step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div>
+                        <div class="step-label">Summary</div>
+                        <div class="step-desc">Review totals</div>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+
+                <div class="workflow-step" data-step="4">
+                    <div class="step-number">4</div>
+                    <div>
+                        <div class="step-label">Payment</div>
+                        <div class="step-desc">Payment info</div>
+                    </div>
+                </div>
+                <div class="step-connector"></div>
+
+                <div class="workflow-step" data-step="5">
+                    <div class="step-number">5</div>
+                    <div>
+                        <div class="step-label">Complete</div>
+                        <div class="step-desc">Save &amp; finalize</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════
+                 MAIN FORM
+                 ══════════════════════════════════════ -->
+            <form id="salesForm"
+                  th:action="@{/sales/add}"
+                  th:object="${sale}"
+                  method="post"
+                  novalidate>
+
+                <!-- CSRF -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <!-- Status input (set by JS) -->
+                <input type="hidden" id="statusInput" th:field="*{status}" value="DRAFT"/>
+
+                <!-- ── BODY GRID (main + sidebar) ── -->
+                <div class="invoice-body">
+
+                    <!-- ════════════════════════════════
+                         LEFT COLUMN — MAIN CONTENT
+                         ════════════════════════════════ -->
+                    <div class="invoice-main">
+
+                        <!-- ──────────────────────────────
+                             STEP 1: CUSTOMER INFORMATION
+                             ────────────────────────────── -->
+                        <div class="erp-card" id="section-customer">
+                            <div class="erp-card-header">
+                                <h2 class="erp-card-title">
+                                    <span class="card-icon"><i class="bi bi-person-fill"></i></span>
+                                    Step 1 — Customer Information
+                                </h2>
+                                <span class="status-pill draft">Required</span>
+                            </div>
+
+                            <div class="erp-card-body">
+                                <div class="row g-3">
+
+                                    <!-- Customer Selector -->
+                                    <div class="col-12 col-md-7">
+                                        <label class="form-label-erp">
+                                            Customer <span class="required-mark">*</span>
+                                        </label>
+
+                                        <!-- Hidden Thymeleaf binding -->
+                                        <input type="hidden"
+                                               id="hiddenCustomerId"
+                                               th:field="*{customerId}"/>
+
+                                        <div class="customer-search-container">
+                                            <i class="bi bi-search search-icon"></i>
+                                            <input type="text"
+                                                   id="customerSearch"
+                                                   class="customer-search-input"
+                                                   placeholder="Search by name, mobile or code…"
+                                                   autocomplete="off"/>
+                                            <!-- Dynamic dropdown (populated by JS) -->
+                                            <div class="customer-dropdown" id="customerDropdown"></div>
+                                        </div>
+                                        <div class="field-hint">Start typing to search customers</div>
+                                    </div>
+
+                                    <!-- Sale Date -->
+                                    <div class="col-12 col-md-5">
+                                        <label class="form-label-erp">
+                                            Sale Date <span class="required-mark">*</span>
+                                        </label>
+                                        <input type="date"
+                                               id="saleDateInput"
+                                               class="form-control-erp"
+                                               th:field="*{saleDate}"/>
+                                    </div>
+
+                                </div>
+
+                                <!-- Customer Info Card (shown after selection) -->
+                                <div class="customer-info-card" id="customerInfoCard" style="margin-top:16px;"></div>
+
+                            </div>
+                        </div>
+
+                        <!-- ──────────────────────────────
+                             STEP 2: SALES ITEMS
+                             ────────────────────────────── -->
+                        <div class="erp-card" id="section-items">
+                            <div class="erp-card-header">
+                                <h2 class="erp-card-title">
+                                    <span class="card-icon"><i class="bi bi-grid-3x3-gap-fill"></i></span>
+                                    Step 2 — Sales Items
+                                </h2>
+                                <button type="button"
+                                        class="btn-add-product"
+                                        onclick="addProductRow()">
+                                    <i class="bi bi-plus-circle"></i>
+                                    Add Product
+                                </button>
+                            </div>
+
+                            <div class="erp-card-body" style="padding:0">
+
+                                <div class="items-table-wrapper" style="border:none;border-radius:0">
+                                    <table class="items-table">
+                                        <thead>
+                                        <tr>
+                                            <th style="width:32px">#</th>
+                                            <th>Product</th>
+                                            <th>Stock</th>
+                                            <th style="width:90px" class="text-end">Qty</th>
+                                            <th style="width:110px" class="text-end">Unit Price</th>
+                                            <th style="width:110px" class="text-end">Disc. Amt</th>
+                                            <th style="width:100px" class="text-end">Disc. %</th>
+                                            <th style="width:120px" class="text-end">Line Total</th>
+                                            <th style="width:42px"></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="itemsTableBody">
+
+                                        <!-- ── Pre-populated rows from model (edit mode / validation error) ──
+                                             These rows bind to th:object items list. Empty on new sale. -->
+                                        <tr th:each="item, iStat : *{items}"
+                                            class="item-row"
+                                            th:data-idx="${iStat.index}">
+                                            <td><span class="row-num" th:text="${iStat.count}">1</span></td>
+                                            <td style="min-width:180px">
+                                                <select class="item-product-select"
+                                                        th:name="|items[${iStat.index}].productId|"
+                                                        th:onchange="|onProductChange(this,${iStat.index})|">
+                                                    <option value="">— Select Product —</option>
+                                                    <option th:each="p : ${products}"
+                                                            th:value="${p.id}"
+                                                            th:text="${p.name}"
+                                                            th:data-price="${p.price}"
+                                                            th:data-stock="${p.stock}"
+                                                            th:selected="${p.id == item.productId}">
+                                                    </option>
+                                                </select>
+                                                <input type="hidden"
+                                                       th:name="|items[${iStat.index}].productId|"
+                                                       class="product-id-hidden"
+                                                       th:value="${item.productId}"/>
+                                            </td>
+                                            <td>
+                          <span class="stock-badge in-stock"
+                                th:id="|stock-${iStat.index}|">
+                            <i class="bi bi-box"></i> —
+                          </span>
+                                            </td>
+                                            <td>
+                                                <input type="number"
+                                                       class="item-input qty-input"
+                                                       th:name="|items[${iStat.index}].quantity|"
+                                                       th:id="|qty-${iStat.index}|"
+                                                       th:value="${item.quantity != null ? item.quantity : 1}"
+                                                       min="1"
+                                                       th:onchange="|calcRowTotal(${iStat.index})|"
+                                                       th:oninput="|calcRowTotal(${iStat.index})|"/>
+                                            </td>
+                                            <td>
+                                                <input type="number"
+                                                       class="item-input price-input"
+                                                       th:name="|items[${iStat.index}].unitPrice|"
+                                                       th:id="|price-${iStat.index}|"
+                                                       th:value="${item.unitPrice != null ? item.unitPrice : 0}"
+                                                       min="0" step="0.01"
+                                                       th:onchange="|calcRowTotal(${iStat.index})|"
+                                                       th:oninput="|calcRowTotal(${iStat.index})|"/>
+                                            </td>
+                                            <td>
+                                                <input type="number"
+                                                       class="item-input disc-amount-input"
+                                                       th:name="|items[${iStat.index}].discountAmount|"
+                                                       th:id="|discAmt-${iStat.index}|"
+                                                       th:value="${item.discountAmount != null ? item.discountAmount : 0}"
+                                                       min="0" step="0.01"
+                                                       th:onchange="|onDiscAmountChange(${iStat.index})|"
+                                                       th:oninput="|onDiscAmountChange(${iStat.index})|"/>
+                                            </td>
+                                            <td>
+                                                <input type="number"
+                                                       class="item-input disc-pct-input"
+                                                       th:name="|items[${iStat.index}].discountPercentage|"
+                                                       th:id="|discPct-${iStat.index}|"
+                                                       th:value="${item.discountPercentage != null ? item.discountPercentage : 0}"
+                                                       min="0" max="100" step="0.01"
+                                                       th:onchange="|onDiscPctChange(${iStat.index})|"
+                                                       th:oninput="|onDiscPctChange(${iStat.index})|"/>
+                                            </td>
+                                            <td>
+                          <span class="line-total-cell"
+                                th:id="|lineTotal-${iStat.index}|">৳ 0.00</span>
+                                            </td>
+                                            <td>
+                                                <button type="button"
+                                                        class="btn-remove-row"
+                                                        onclick="removeProductRow(this)"
+                                                        title="Remove">
+                                                    <i class="bi bi-trash3"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Empty state (shown when no rows) -->
+                                        <tr id="tableEmptyState"
+                                            th:if="${#lists.isEmpty(sale.items) or sale.items == null}">
+                                            <td colspan="9">
+                                                <div class="table-empty-state">
+                                                    <i class="bi bi-cart-x"></i>
+                                                    <p>No products added yet.<br/>
+                                                        Click <strong>Add Product</strong> to get started.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Add Row Footer -->
+                                <div style="padding:12px 20px;border-top:1px solid var(--border);background:var(--surface-2);">
+                                    <button type="button"
+                                            class="btn-add-product"
+                                            onclick="addProductRow()">
+                                        <i class="bi bi-plus-circle"></i>
+                                        Add Another Product
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ──────────────────────────────
+                             STEP 3 + 4: DISCOUNT & NOTES + PAYMENT
+                             ────────────────────────────── -->
+                        <div class="row g-3">
+
+                            <!-- Invoice Level Discount & Notes -->
+                            <div class="col-12 col-md-7">
+                                <div class="erp-card">
+                                    <div class="erp-card-header">
+                                        <h2 class="erp-card-title">
+                                            <span class="card-icon"><i class="bi bi-tag-fill"></i></span>
+                                            Step 3 — Invoice Adjustments
+                                        </h2>
+                                    </div>
+                                    <div class="erp-card-body">
+                                        <div class="row g-3">
+                                            <div class="col-12 col-sm-6">
+                                                <label class="form-label-erp">Invoice Discount (Amount)</label>
+                                                <div class="advance-input-group">
+                                                    <span class="currency-prefix">৳</span>
+                                                    <input type="number"
+                                                           class="form-control-erp"
+                                                           id="invoiceDiscount"
+                                                           name="invoiceDiscount"
+                                                           value="0"
+                                                           min="0"
+                                                           step="0.01"
+                                                           placeholder="0.00"/>
+                                                </div>
+                                                <div class="field-hint">Applied after all line discounts</div>
+                                            </div>
+
+                                            <div class="col-12 col-sm-6">
+                                                <label class="form-label-erp">Advance Paid</label>
+                                                <div class="advance-input-group">
+                                                    <span class="currency-prefix">৳</span>
+                                                    <input type="number"
+                                                           class="form-control-erp"
+                                                           id="advancePaidInput"
+                                                           th:field="*{advancePaid}"
+                                                           min="0"
+                                                           step="0.01"
+                                                           placeholder="0.00"/>
+                                                </div>
+                                                <div class="field-hint">Amount paid in advance</div>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <label class="form-label-erp">Internal Notes</label>
+                                                <textarea class="form-control-erp"
+                                                          th:field="*{notes}"
+                                                          rows="3"
+                                                          placeholder="Internal notes or special instructions…"
+                                                          style="resize:vertical;"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Methods -->
+                            <div class="col-12 col-md-5">
+                                <div class="erp-card">
+                                    <div class="erp-card-header">
+                                        <h2 class="erp-card-title">
+                                            <span class="card-icon"><i class="bi bi-wallet2"></i></span>
+                                            Step 4 — Payment Method
+                                        </h2>
+                                        <span class="status-pill pending" style="font-size:10px;">Future-ready</span>
+                                    </div>
+                                    <div class="erp-card-body">
+
+                                        <div class="payment-methods-grid">
+
+                                            <!-- Cash -->
+                                            <div class="payment-method-card pm-cash selected" data-method="CASH">
+                                                <div class="pm-icon"><i class="bi bi-cash-coin"></i></div>
+                                                <div>
+                                                    <div class="pm-name">Cash</div>
+                                                    <div class="pm-status">Available</div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Bank Transfer -->
+                                            <div class="payment-method-card pm-bank" data-method="BANK">
+                                                <div class="pm-icon"><i class="bi bi-bank2"></i></div>
+                                                <div>
+                                                    <div class="pm-name">Bank Transfer</div>
+                                                    <div class="pm-status">Available</div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Card -->
+                                            <div class="payment-method-card pm-card" data-method="CARD">
+                                                <div class="pm-icon"><i class="bi bi-credit-card-2-front"></i></div>
+                                                <div>
+                                                    <div class="pm-name">Card</div>
+                                                    <div class="pm-status">Available</div>
+                                                </div>
+                                            </div>
+
+                                            <!-- bKash -->
+                                            <div class="payment-method-card pm-bkash" data-method="BKASH">
+                                                <div class="pm-icon"><i class="bi bi-phone"></i></div>
+                                                <div>
+                                                    <div class="pm-name">bKash</div>
+                                                    <div class="pm-status">MFS</div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Nagad -->
+                                            <div class="payment-method-card pm-nagad" data-method="NAGAD">
+                                                <div class="pm-icon"><i class="bi bi-phone-flip"></i></div>
+                                                <div>
+                                                    <div class="pm-name">Nagad</div>
+                                                    <div class="pm-status">MFS</div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <input type="hidden" name="paymentMethod" id="paymentMethodInput" value="CASH"/>
+
+                                        <div class="field-hint" style="margin-top:4px;">
+                                            <i class="bi bi-info-circle"></i>
+                                            Payment method integration coming soon. Record for reference only.
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end row -->
+
+                    </div>
+                    <!-- end invoice-main -->
+
+                    <!-- ════════════════════════════════
+                         RIGHT COLUMN — STICKY SUMMARY
+                         ════════════════════════════════ -->
+                    <div class="invoice-sidebar">
+
+                        <!-- Invoice Summary Card -->
+                        <div class="summary-card">
+                            <div class="summary-card-header">
+                                <div class="summary-title">Invoice Summary</div>
+                                <div class="summary-invoice-num">
+                                    <i class="bi bi-receipt me-1" style="opacity:.7"></i>
+                                    NEW
+                                </div>
+                            </div>
+
+                            <div class="summary-rows">
+                                <div class="summary-row">
+                                    <span class="s-label">Subtotal</span>
+                                    <span class="s-value" id="summarySubtotal">৳ 0.00</span>
+                                </div>
+                                <div class="summary-row discount">
+                                    <span class="s-label">Item Discounts</span>
+                                    <span class="s-value" id="summaryItemDisc">- ৳ 0.00</span>
+                                </div>
+                                <div class="summary-row discount">
+                                    <span class="s-label">Invoice Discount</span>
+                                    <span class="s-value" id="summaryInvDisc">- ৳ 0.00</span>
+                                </div>
+
+                                <div class="summary-divider"></div>
+
+                                <div class="summary-row total-row">
+                                    <span class="s-label">Grand Total</span>
+                                    <span class="s-value" id="summaryGrandTotal">৳ 0.00</span>
+                                </div>
+
+                                <div class="summary-divider"></div>
+
+                                <div class="summary-row paid-row">
+                                    <span class="s-label">Advance Paid</span>
+                                    <span class="s-value" id="summaryAdvancePaid">৳ 0.00</span>
+                                </div>
+                                <div class="summary-row due-row">
+                                    <span class="s-label" style="font-weight:700;">Due Amount</span>
+                                    <span class="s-value" id="summaryDue" style="color:var(--erp-danger)">৳ 0.00</span>
+                                </div>
+                            </div>
+
+                            <!-- Quick action inside summary -->
+                            <div style="padding:14px 20px;border-top:1px solid var(--border)">
+                                <div class="d-grid gap-2">
+
+                                    <!-- Complete Sale — restricted to SUPER_ADMIN and BUSINESS_OWNER -->
+                                    <button type="button"
+                                            id="btnCompleteSummary"
+                                            class="btn-erp btn-erp-success"
+                                            sec:authorize="hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')"
+                                            onclick="document.getElementById('btnComplete').click()"
+                                            style="justify-content:center;">
+                                        <span class="btn-icon"><i class="bi bi-check-circle-fill"></i></span>
+                                        <span class="btn-spinner"></span>
+                                        Complete Sale
+                                    </button>
+
+                                    <button type="button"
+                                            id="btnSaveDraftSummary"
+                                            class="btn-erp btn-erp-outline"
+                                            onclick="document.getElementById('btnSaveDraft').click()"
+                                            style="justify-content:center;">
+                                        <span class="btn-icon"><i class="bi bi-floppy"></i></span>
+                                        <span class="btn-spinner"></span>
+                                        Save Draft
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Business Info Card -->
+                        <div class="erp-card" style="margin-top:16px;">
+                            <div class="erp-card-header">
+                                <h2 class="erp-card-title">
+                                    <span class="card-icon"><i class="bi bi-building"></i></span>
+                                    Business
+                                </h2>
+                            </div>
+                            <div class="erp-card-body" style="padding:14px;">
+                                <!-- businessId binding -->
+                                <input type="hidden" th:field="*{businessId}"/>
+                                <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">
+                                    <div><i class="bi bi-building me-2 text-primary"></i>
+                                        <strong th:text="${sale.businessName ?: 'Current Business'}">Business</strong>
+                                    </div>
+                                    <div style="margin-top:6px;color:var(--text-muted);font-size:11px;">
+                                        Invoice will be created under the currently active business.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security Note (employees) -->
+                        <div class="erp-card"
+                             sec:authorize="!hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')"
+                             style="margin-top:16px;border-color:#fde68a;">
+                            <div class="erp-card-body" style="padding:14px;background:#fffbeb;">
+                                <div class="d-flex gap-2 align-items-start">
+                                    <i class="bi bi-shield-exclamation text-warning" style="font-size:18px;margin-top:1px;flex-shrink:0;"></i>
+                                    <div>
+                                        <div style="font-size:12px;font-weight:700;color:#92400e;">Limited Access</div>
+                                        <div style="font-size:11px;color:#78350f;margin-top:2px;line-height:1.6;">
+                                            You can save as Draft. Only BUSINESS_OWNER or SUPER_ADMIN can complete or cancel a sale.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- end invoice-sidebar -->
+
+                </div>
+                <!-- end invoice-body -->
+
+            </form>
+            <!-- end salesForm -->
+
+        </div>
+        <!-- end invoice-wrapper -->
+
+    </div>
+    <!-- end mainContent -->
+</div>
+<!-- end appShell -->
+
+<!-- ══════════════════════════════════════════════════════════
+     FOOTER ACTION BAR
+     ══════════════════════════════════════════════════════════ -->
+<div class="invoice-action-bar">
+    <div class="action-bar-left">
+        <!-- Back Button -->
+        <button type="button" id="btnBack" class="btn-erp btn-erp-outline">
+            <i class="bi bi-arrow-left"></i>
+            <span class="d-none d-sm-inline">Back</span>
+        </button>
+
+        <!-- Cancel — restricted -->
+        <button type="button"
+                id="btnCancel"
+                class="btn-erp btn-erp-danger"
+                sec:authorize="hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')">
+            <span class="btn-icon"><i class="bi bi-x-lg"></i></span>
+            <span class="btn-spinner"></span>
+            <span class="d-none d-sm-inline">Cancel</span>
+        </button>
+    </div>
+
+    <!-- Mobile totals summary -->
+    <div class="d-md-none text-center" style="font-size:12px;line-height:1.4;">
+        <div style="color:var(--text-muted);">Grand Total</div>
+        <div style="font-weight:700;font-family:var(--font-mono);" id="mobileGrandTotal">৳ 0.00</div>
+        <div style="font-size:10px;color:var(--erp-danger);">
+            Due: <span id="mobileDueAmount">৳ 0.00</span>
+        </div>
+    </div>
+
+    <div class="action-bar-right">
+        <!-- Save Draft -->
+        <button type="button"
+                id="btnSaveDraft"
+                class="btn-erp btn-erp-outline">
+            <span class="btn-icon"><i class="bi bi-floppy-fill"></i></span>
+            <span class="btn-spinner"></span>
+            Save Draft
+        </button>
+
+        <!-- Complete Sale — restricted to SUPER_ADMIN and BUSINESS_OWNER -->
+        <button type="button"
+                id="btnComplete"
+                class="btn-erp btn-erp-success"
+                sec:authorize="hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')">
+            <span class="btn-icon"><i class="bi bi-check-circle-fill"></i></span>
+            <span class="btn-spinner"></span>
+            Complete Sale
+        </button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CONFIRM MODAL
+     ══════════════════════════════════════════════════════════ -->
+<div class="erp-modal-overlay" id="confirmModal">
+    <div class="erp-modal">
+        <div class="modal-icon-wrap warning">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <div class="modal-title">Are you sure?</div>
+        <div class="modal-desc">This action requires confirmation.</div>
+        <div class="modal-actions">
+            <button type="button" id="cancelConfirmBtn" class="btn-erp btn-erp-outline">Cancel</button>
+            <button type="button" id="confirmBtn"       class="btn-erp btn-erp-primary">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCRIPTS
+     ══════════════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/sales.js}"></script>
+
+<!-- Sync payment method card selection to hidden input -->
+<script>
+    document.querySelectorAll('.payment-method-card').forEach(function(card) {
+      card.addEventListener('click', function() {
+        document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        var method = card.getAttribute('data-method');
+        document.getElementById('paymentMethodInput').value = method || 'CASH';
+      });
+    });
+</script>
+
+</body>
+</html>
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en"-->
+<!--      xmlns:th="http://www.thymeleaf.org"-->
+<!--      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8"/>-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>-->
+<!--    <title>New Sale Invoice – eLoan SaaS</title>-->
+
+<!--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">-->
+<!--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">-->
+<!--    <link rel="stylesheet" th:href="@{/css/dashboard.css}">-->
+<!--    <link rel="stylesheet" th:href="@{/css/purchase.css}">-->
+<!--</head>-->
+<!--<body class="erp-body">-->
+
+<!--&lt;!&ndash; Sidebar &ndash;&gt;-->
+<!--<div th:replace="~{dashboard/fragments/sidebar :: sidebar}"></div>-->
+
+<!--&lt;!&ndash; Main Wrapper &ndash;&gt;-->
+<!--<div class="erp-main" id="erpMain">-->
+
+<!--    &lt;!&ndash; Topbar &ndash;&gt;-->
+<!--    <div th:replace="~{dashboard/fragments/topbar :: topbar}"></div>-->
+
+<!--    &lt;!&ndash; Page Content &ndash;&gt;-->
+<!--    <main class="erp-content">-->
+
+<!--        &lt;!&ndash; ── PAGE HEADER ──────────────────────────────────── &ndash;&gt;-->
+<!--        <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">-->
+<!--            <div>-->
+<!--                <nav aria-label="breadcrumb">-->
+<!--                    <ol class="breadcrumb breadcrumb-erp mb-1">-->
+<!--                        <li class="breadcrumb-item"><a th:href="@{/dashboard}"><i class="bi bi-house-door"></i> Dashboard</a></li>-->
+<!--                        <li class="breadcrumb-item"><a th:href="@{/sales}">Sales</a></li>-->
+<!--                        <li class="breadcrumb-item active" aria-current="page">New Invoice</li>-->
+<!--                    </ol>-->
+<!--                </nav>-->
+<!--                <h1 class="page-title mb-0">New Sales Invoice</h1>-->
+<!--                <p class="page-subtitle mb-0">Create customer sales transaction</p>-->
+<!--            </div>-->
+<!--            <div class="d-flex gap-2">-->
+<!--                <a th:href="@{/sales}" class="btn btn-ghost-erp">-->
+<!--                    <i class="bi bi-arrow-left me-2"></i>Back-->
+<!--                </a>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; ── FORM ──────────────────────────────────────────── &ndash;&gt;-->
+<!--        <form id="sale-form" th:action="@{/sales/save}" method="post">-->
+
+<!--            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
+<!--            <input type="hidden" id="sale-status" name="status" value="DRAFT"/>-->
+<!--            <input type="hidden" name="businessId" th:value="${businessId}">-->
+<!--            <input type="hidden" name="saleDate"-->
+<!--                   th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">-->
+
+<!--            &lt;!&ndash; STEP 1: Customer (Smart Field) &ndash;&gt;-->
+<!--            <div class="card">-->
+<!--                <div class="card-header">-->
+<!--                    <div class="d-flex align-items-center gap-2">-->
+<!--                        <i class="bi bi-person-check"></i>-->
+<!--                        <div>-->
+<!--                            <h5 class="erp-card__title mb-0">Customer Information</h5>-->
+<!--                            <p class="erp-card__subtitle mb-0">Step 1 — Select or create customer</p>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="card-body">-->
+<!--                    <div class="row g-3">-->
+
+<!--                        &lt;!&ndash; Customer Smart Field &ndash;&gt;-->
+<!--                        <div class="col-md-8">-->
+<!--                            <label class="form-label fw-semibold" style="font-size:.8125rem;">-->
+<!--                                Customer <span class="text-danger">*</span>-->
+<!--                            </label>-->
+<!--                            <div class="input-group position-relative">-->
+<!--                                <input type="text"-->
+<!--                                       id="customer-input"-->
+<!--                                       class="form-control erp-input"-->
+<!--                                       placeholder="Type name to search or create..."-->
+<!--                                       autocomplete="off"-->
+<!--                                       oninput="handleCustomerInput()"-->
+<!--                                       onkeydown="handleCustomerKeydown(event)">-->
+<!--                                <button class="btn btn-outline-secondary" type="button" onclick="toggleCustomerDropdown()">-->
+<!--                                    <i class="bi bi-chevron-down"></i>-->
+<!--                                </button>-->
+
+<!--                                &lt;!&ndash; Customer Dropdown &ndash;&gt;-->
+<!--                                <div id="customer-dropdown" class="customer-dropdown-erp hidden position-absolute w-100">-->
+<!--                                    <div id="customer-list" class="customer-list-erp">-->
+<!--                                        <div th:each="cust : ${customers}"-->
+<!--                                             class="customer-option-erp"-->
+<!--                                             data-id="${cust.id}"-->
+<!--                                             data-name="${cust.name}"-->
+<!--                                             data-phone="${cust.phone}"-->
+<!--                                             data-due="${#numbers.formatDecimal(cust.dueAmount, 1, 2)}"-->
+<!--                                             onclick="selectCustomer(this)">-->
+<!--                                            <div class="d-flex align-items-center justify-content-between">-->
+<!--                                                <div>-->
+<!--                                                    <strong th:text="${cust.name}"></strong>-->
+<!--                                                    <small class="d-block text-muted" th:text="${cust.phone}"></small>-->
+<!--                                                </div>-->
+<!--                                                <span class="badge bg-light text-dark"-->
+<!--                                                      th:text="'Due: ৳' + ${#numbers.formatDecimal(cust.dueAmount, 1, 2)}"></span>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+
+<!--                                    &lt;!&ndash; New Customer Option &ndash;&gt;-->
+<!--                                    <div id="customer-new-option" class="customer-new-erp hidden border-top p-2">-->
+<!--                                        <button type="button" class="btn btn-sm btn-primary-erp w-100"-->
+<!--                                                onclick="createNewCustomer()">-->
+<!--                                            <i class="bi bi-plus-lg"></i> Add New Customer-->
+<!--                                        </button>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+
+<!--                            &lt;!&ndash; Hidden Input &ndash;&gt;-->
+<!--                            <input type="hidden" id="customer-id-input" name="customerId">-->
+<!--                        </div>-->
+
+<!--                        &lt;!&ndash; Phone &ndash;&gt;-->
+<!--                        <div class="col-md-4">-->
+<!--                            <label class="form-label fw-semibold" style="font-size:.8125rem;">Phone</label>-->
+<!--                            <input type="text" id="customer-phone-input" name="customerPhone"-->
+<!--                                   class="form-control erp-input" placeholder="Phone">-->
+<!--                        </div>-->
+
+<!--                    </div>-->
+
+<!--                    &lt;!&ndash; Customer Info Card &ndash;&gt;-->
+<!--                    <div id="customer-info-card" class="supplier-info-box hidden mt-3">-->
+<!--                        <div class="d-flex align-items-center justify-content-between mb-2">-->
+<!--                            <strong id="cust-card-name">—</strong>-->
+<!--                            <span id="cust-card-due" class="badge bg-danger">Due: ৳0.00</span>-->
+<!--                        </div>-->
+<!--                        <div class="d-flex flex-column gap-1">-->
+<!--                            <div class="supplier-info-row">-->
+<!--                                <i class="bi bi-telephone"></i>-->
+<!--                                <span id="cust-card-phone">—</span>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; STEP 2: Sale Items &ndash;&gt;-->
+<!--            <div class="card">-->
+<!--                <div class="card-header">-->
+<!--                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">-->
+<!--                        <div class="d-flex align-items-center gap-2">-->
+<!--                            <i class="bi bi-cart-plus"></i>-->
+<!--                            <div>-->
+<!--                                <h5 class="erp-card__title mb-0">Sale Items</h5>-->
+<!--                                <p class="erp-card__subtitle mb-0">Step 2 — Add products to this sale</p>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <button type="button" class="btn btn-primary-erp btn-sm" onclick="addSaleRow()">-->
+<!--                            <i class="bi bi-plus-lg me-1"></i>Add Product-->
+<!--                        </button>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                <div class="card-body p-0">-->
+<!--                    <div class="table-responsive">-->
+<!--                        <table class="table align-middle mb-0 erp-table purchase-table">-->
+<!--                            <thead>-->
+<!--                            <tr>-->
+<!--                                <th style="width:200px">Product</th>-->
+<!--                                <th style="width:110px">Stock</th>-->
+<!--                                <th style="width:90px">Qty</th>-->
+<!--                                <th style="width:110px">Price</th>-->
+<!--                                <th style="width:110px">Disc Amt</th>-->
+<!--                                <th style="width:100px">Disc %</th>-->
+<!--                                <th style="width:120px">Total</th>-->
+<!--                                <th style="width:48px;text-align:center;">—</th>-->
+<!--                            </tr>-->
+<!--                            </thead>-->
+<!--                            <tbody id="sale-tbody"></tbody>-->
+<!--                        </table>-->
+<!--                    </div>-->
+
+<!--                    &lt;!&ndash; Empty state &ndash;&gt;-->
+<!--                    <div id="table-empty-state" class="text-center py-5 text-muted">-->
+<!--                        <i class="bi bi-cart d-block mb-2" style="font-size:2.5rem;opacity:.2;"></i>-->
+<!--                        <p class="mb-1 fw-semibold">No Products Added</p>-->
+<!--                        <p class="small mb-0">Click "Add Product" to start</p>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; STEP 3: Invoice Summary &ndash;&gt;-->
+<!--            <div class="card">-->
+<!--                <div class="card-header">-->
+<!--                    <div class="d-flex align-items-center gap-2">-->
+<!--                        <i class="bi bi-calculator"></i>-->
+<!--                        <div>-->
+<!--                            <h5 class="erp-card__title mb-0">Invoice Summary</h5>-->
+<!--                            <p class="erp-card__subtitle mb-0">Step 3 — Review totals and apply discounts</p>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="card-body">-->
+
+<!--                    <div class="summary-grid-erp mb-4">-->
+<!--                        <div class="summary-item-erp">-->
+<!--                            <span>Subtotal</span>-->
+<!--                            <strong id="summary-subtotal">৳0.00</strong>-->
+<!--                        </div>-->
+<!--                        <div class="summary-item-erp">-->
+<!--                            <span>Item Disc</span>-->
+<!--                            <strong id="summary-item-disc" class="text-danger">-৳0.00</strong>-->
+<!--                        </div>-->
+<!--                        <div class="summary-item-erp">-->
+<!--                            <span>Invoice Disc</span>-->
+<!--                            <strong id="summary-inv-disc" class="text-danger">-৳0.00</strong>-->
+<!--                        </div>-->
+<!--                        <div class="summary-item-erp summary-item-erp&#45;&#45;total">-->
+<!--                            <span>Grand Total</span>-->
+<!--                            <strong id="summary-grand-total">৳0.00</strong>-->
+<!--                        </div>-->
+<!--                        <div class="summary-item-erp">-->
+<!--                            <span>Paid</span>-->
+<!--                            <strong id="summary-paid" class="text-success">৳0.00</strong>-->
+<!--                        </div>-->
+<!--                        <div class="summary-item-erp summary-item-erp&#45;&#45;due">-->
+<!--                            <span>Due</span>-->
+<!--                            <strong id="summary-due" class="text-danger">৳0.00</strong>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+<!--                    <div class="row g-3">-->
+<!--                        <div class="col-md-4">-->
+<!--                            <label class="form-label fw-semibold" style="font-size:.8125rem;">Invoice Discount</label>-->
+<!--                            <div class="input-group">-->
+<!--                                <span class="input-group-text" style="font-size:.875rem;">৳</span>-->
+<!--                                <input type="number" id="invoice-discount-input"-->
+<!--                                       value="0.00" min="0" step="any"-->
+<!--                                       class="form-control erp-input"-->
+<!--                                       oninput="recalculateEntireVoucher()">-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; STEP 4: Payments &ndash;&gt;-->
+<!--            <div class="card mb-4">-->
+<!--                <div class="card-header">-->
+<!--                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">-->
+<!--                        <div class="d-flex align-items-center gap-2">-->
+<!--                            <i class="bi bi-credit-card"></i>-->
+<!--                            <div>-->
+<!--                                <h5 class="erp-card__title mb-0">Payments</h5>-->
+<!--                                <p class="erp-card__subtitle mb-0">Step 4 — Record payment methods</p>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <button type="button" class="btn btn-ghost-erp btn-sm" onclick="addPaymentRow()">-->
+<!--                            <i class="bi bi-plus-lg me-1"></i>Add Payment-->
+<!--                        </button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="card-body">-->
+<!--                    <div id="payment-matrix-container"></div>-->
+<!--                    <div id="payment-empty" class="text-center py-3 text-muted" style="font-size:.875rem;">-->
+<!--                        No payments added yet-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; ACTION BUTTONS &ndash;&gt;-->
+<!--            <div class="d-flex gap-2 justify-content-end pb-4">-->
+<!--                <button type="button" class="btn btn-ghost-erp" onclick="window.history.back()">-->
+<!--                    <i class="bi bi-x-lg me-2"></i>Cancel-->
+<!--                </button>-->
+<!--                <button type="button" class="btn btn-warning-erp" onclick="submitSaleForm('DRAFT')">-->
+<!--                    <i class="bi bi-save me-2"></i>Save Draft-->
+<!--                </button>-->
+<!--                <button type="button" class="btn btn-primary-erp" onclick="submitSaleForm('COMPLETED')">-->
+<!--                    <i class="bi bi-check-lg me-2"></i>Complete Sale-->
+<!--                </button>-->
+<!--            </div>-->
+
+<!--        </form>-->
+
+<!--    </main>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Data &ndash;&gt;-->
+<!--<script th:inline="javascript">-->
+<!--    /*<![CDATA[*/-->
+<!--    const initialProducts   = /*[[${products}]]*/ [];-->
+<!--    const initialCustomers  = /*[[${customers}]]*/ [];-->
+<!--    /*]]>*/-->
+<!--</script>-->
+
+<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>-->
+<!--<script th:src="@{/js/dashboard.js}"></script>-->
+<!--<script th:src="@{/js/sales.js}"></script>-->
+<!--</body>-->
+<!--</html>-->

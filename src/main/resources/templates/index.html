@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="eLoan SaaS - Smart Business Management Platform for inventory, sales, expenses, and analytics">
+    <meta name="keywords" content="business management, inventory software, sales tracking, expense management, SaaS platform">
+    <title>eLoan SaaS - Smart Business Management Platform</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-blue: #3B82F6;
+            --primary-blue-light: #60A5FA;
+            --primary-blue-dark: #2563EB;
+            --secondary-blue: #0EA5E9;
+            --accent-cyan: #06B6D4;
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+            --bg-light: #F8FAFC;
+            --bg-white: #FFFFFF;
+            --border-light: #E2E8F0;
+            --shadow-sm: 0 2px 8px rgba(59, 130, 246, 0.08);
+            --shadow-md: 0 4px 24px rgba(59, 130, 246, 0.12);
+            --shadow-lg: 0 8px 40px rgba(59, 130, 246, 0.16);
+            --gradient-primary: linear-gradient(135deg, #3B82F6 0%, #0EA5E9 100%);
+            --gradient-light: linear-gradient(135deg, #EFF6FF 0%, #F0F9FF 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-dark);
+            line-height: 1.7;
+            background-color: var(--bg-white);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--text-dark);
+        }
+
+        /* Navbar Styles */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            padding: 1rem 0;
+        }
+
+        .navbar-custom.scrolled {
+            box-shadow: var(--shadow-md);
+        }
+
+        .navbar-brand {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            font-weight: 500;
+            margin: 0 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-blue);
+        }
+
+        .btn-login {
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+
+        .btn-login:hover {
+            background: var(--primary-blue);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-register {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 50%, #F0F9FF 100%);
+            padding: 120px 0 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            letter-spacing: -1px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            max-width: 600px;
+            line-height: 1.8;
+        }
+
+        .btn-hero {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        .btn-hero-primary {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-hero-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-hero-secondary {
+            background: white;
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+        }
+
+        .btn-hero-secondary:hover {
+            background: var(--primary-blue);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .hero-image {
+            position: relative;
+            animation: fadeInRight 1s ease-out;
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .dashboard-mockup {
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            background: white;
+            padding: 1rem;
+        }
+
+        .mockup-header {
+            background: var(--gradient-light);
+            height: 40px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+        }
+
+        .mockup-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .mockup-body {
+            background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+            height: 300px;
+            border-radius: 0 0 8px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mockup-body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--primary-blue-light) 2px, transparent 2px);
+            background-size: 30px 30px;
+            opacity: 0.1;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-50%, -50%); }
+        }
+
+        /* Section Styles */
+        section {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 1rem;
+            letter-spacing: -0.5px;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 4rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Feature Cards */
+        .feature-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            height: 100%;
+            border: 1px solid var(--border-light);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-blue-light);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--gradient-light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.75rem;
+            color: var(--primary-blue);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            background: var(--gradient-primary);
+            color: white;
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .feature-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        /* Benefits Section */
+        .benefits-section {
+            background: var(--gradient-light);
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .benefit-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            margin-right: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .benefit-content h4 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .benefit-content p {
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .benefits-visual {
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: var(--shadow-md);
+            position: relative;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 50%, #0EA5E9 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: drift 30s linear infinite;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .cta-title {
+            font-size: 2.75rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+
+        .cta-subtitle {
+            font-size: 1.25rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.95;
+        }
+
+        .btn-cta {
+            background: white;
+            color: var(--primary-blue);
+            padding: 1.2rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 12px;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 3rem 0 1.5rem;
+        }
+
+        .footer-brand {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .footer-description {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+            max-width: 350px;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-blue-light);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .cta-title {
+                font-size: 2rem;
+            }
+
+            .btn-hero {
+                padding: 0.875rem 2rem;
+                font-size: 1rem;
+                display: block;
+                width: 100%;
+                margin: 0.5rem 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .navbar-brand {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Utility Classes */
+        .text-gradient {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Loading Animation */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="#">eLoan SaaS</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link" href="#features">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#benefits">Benefits</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#pricing">Pricing</a>
+                </li>
+                <li class="nav-item ms-lg-3">
+                    <button class="btn btn-login"
+                            onclick="window.location.href='/login'">
+                        Login
+                    </button>
+
+                </li>
+                <li class="nav-item ms-2">
+                    <button class="btn btn-register"
+                            onclick="window.location.href='/register'">
+                        Register
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 hero-content">
+                <h1 class="hero-title">
+                    Smart Business<br>
+                    <span class="text-gradient">Management Platform</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Manage inventory, sales, expenses, reports, and business operations from one powerful cloud platform. Built for modern businesses.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-hero btn-hero-primary" onclick="window.location.href='/register'">
+                        <i class="bi bi-rocket-takeoff me-2"></i>Start Free
+                    </button>
+                    <button class="btn btn-hero btn-hero-secondary" onclick="window.location.href='/login'">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    </button>
+                </div>
+            </div>
+            <div class="col-lg-6 hero-image mt-5 mt-lg-0">
+                <div class="dashboard-mockup">
+                    <div class="mockup-header">
+                        <span class="mockup-dot" style="background: #FF5F57;"></span>
+                        <span class="mockup-dot" style="background: #FFBD2E;"></span>
+                        <span class="mockup-dot" style="background: #28CA42;"></span>
+                    </div>
+                    <div class="mockup-body">
+                        <div class="text-center">
+                            <i class="bi bi-graph-up-arrow" style="font-size: 4rem; color: var(--primary-blue);"></i>
+                            <h3 class="mt-3" style="color: var(--text-dark);">Analytics Dashboard</h3>
+                            <p class="text-muted">Real-time business insights</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features">
+    <div class="container">
+        <h2 class="section-title">Powerful Features for Your Business</h2>
+        <p class="section-subtitle">
+            Everything you need to manage and grow your business efficiently
+        </p>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4 fade-in-section">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <h3 class="feature-title">Inventory Management</h3>
+                    <p class="feature-description">
+                        Track stock levels, manage products, and automate reordering. Real-time inventory updates across all locations.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 fade-in-section">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <h3 class="feature-title">Sales Tracking</h3>
+                    <p class="feature-description">
+                        Monitor sales performance, track revenue trends, and generate invoices. Complete sales pipeline visibility.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 fade-in-section">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <h3 class="feature-title">Expense Management</h3>
+                    <p class="feature-description">
+                        Control costs, track expenses, and manage budgets. Automated expense categorization and reporting.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 fade-in-section">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <h3 class="feature-title">Due Management</h3>
+                    <p class="feature-description">
+                        Never miss a payment. Track receivables, payables, and get automated reminders for due dates.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 fade-in-section">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-pie-chart"></i>
+                    </div>
+                    <h3 class="feature-title">Analytics Dashboard</h3>
+                    <p class="feature-description">
+                        Beautiful visualizations and insights. Make data-driven decisions with comprehensive business analytics.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 fade-in-section">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <h3 class="feature-title">Multi-Business Support</h3>
+                    <p class="feature-description">
+                        Manage multiple businesses from one account. Perfect for entrepreneurs with multiple ventures.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Benefits Section -->
+<section id="benefits" class="benefits-section">
+    <div class="container">
+        <h2 class="section-title">Why Choose eLoan SaaS</h2>
+        <p class="section-subtitle">
+            Built with modern technology and designed for the future
+        </p>
+
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="bi bi-cloud-check"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>100% Cloud Based</h4>
+                        <p>Access your business data anywhere, anytime. No installation required, automatic updates included.</p>
+                    </div>
+                </div>
+
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>Bank-Level Security</h4>
+                        <p>Enterprise-grade encryption, secure data centers, and regular security audits keep your data safe.</p>
+                    </div>
+                </div>
+
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="bi bi-phone"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>Multi-Device Support</h4>
+                        <p>Seamlessly switch between desktop, tablet, and mobile. Your business in your pocket.</p>
+                    </div>
+                </div>
+
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="bi bi-lightning"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>Lightning Fast Performance</h4>
+                        <p>Optimized infrastructure ensures instant load times and smooth user experience.</p>
+                    </div>
+                </div>
+
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="bi bi-bar-chart"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>Advanced Business Analytics</h4>
+                        <p>Gain deep insights with AI-powered analytics and customizable reporting dashboards.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 mt-5 mt-lg-0">
+                <div class="benefits-visual">
+                    <h3 class="text-center mb-4">Trusted by Businesses</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number">10K+</div>
+                            <div class="stat-label">Active Users</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">99.9%</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">50+</div>
+                            <div class="stat-label">Countries</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">4.9/5</div>
+                            <div class="stat-label">User Rating</div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-5">
+                        <i class="bi bi-award" style="font-size: 4rem; color: var(--primary-blue);"></i>
+                        <h4 class="mt-3">Award-Winning Platform</h4>
+                        <p class="text-muted">Recognized for innovation and excellence</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2 class="cta-title">Start Managing Your Business Smarter Today</h2>
+            <p class="cta-subtitle">
+                Join thousands of businesses already using eLoan SaaS. No credit card required.
+            </p>
+            <button class="btn btn-cta" onclick="window.location.href='/register'">
+                Create Free Account <i class="bi bi-arrow-right ms-2"></i>
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 mb-4 mb-lg-0">
+                <h3 class="footer-brand">eLoan SaaS</h3>
+                <p class="footer-description">
+                    The modern business management platform built for growth. Manage your entire business from one powerful cloud solution.
+                </p>
+                <div class="social-icons">
+                    <a href="#" class="text-white me-3"><i class="bi bi-facebook" style="font-size: 1.5rem;"></i></a>
+                    <a href="#" class="text-white me-3"><i class="bi bi-twitter" style="font-size: 1.5rem;"></i></a>
+                    <a href="#" class="text-white me-3"><i class="bi bi-linkedin" style="font-size: 1.5rem;"></i></a>
+                    <a href="#" class="text-white"><i class="bi bi-instagram" style="font-size: 1.5rem;"></i></a>
+                </div>
+            </div>
+
+            <div class="col-lg-2 col-md-4 mb-4 mb-lg-0">
+                <h5 class="mb-3">Product</h5>
+                <ul class="footer-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                    <li><a href="#security">Security</a></li>
+                    <li><a href="#integrations">Integrations</a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-2 col-md-4 mb-4 mb-lg-0">
+                <h5 class="mb-3">Company</h5>
+                <ul class="footer-links">
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#blog">Blog</a></li>
+                    <li><a href="#careers">Careers</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-2 col-md-4 mb-4 mb-lg-0">
+                <h5 class="mb-3">Resources</h5>
+                <ul class="footer-links">
+                    <li><a href="#help">Help Center</a></li>
+                    <li><a href="#docs">Documentation</a></li>
+                    <li><a href="#api">API Reference</a></li>
+                    <li><a href="#status">System Status</a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-2 col-md-4">
+                <h5 class="mb-3">Legal</h5>
+                <ul class="footer-links">
+                    <li><a href="#terms">Terms of Service</a></li>
+                    <li><a href="#privacy">Privacy Policy</a></li>
+                    <li><a href="#cookies">Cookie Policy</a></li>
+                    <li><a href="#compliance">Compliance</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2024 eLoan SaaS. All rights reserved. Built with passion for modern businesses.</p>
+        </div>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Navbar scroll effect
+    window.addEventListener('scroll', function() {
+        const navbar = document.querySelector('.navbar-custom');
+        if (window.scrollY > 50) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
+
+    // Fade-in sections on scroll
+    const faders = document.querySelectorAll('.fade-in-section');
+
+    const appearOptions = {
+        threshold: 0.15,
+        rootMargin: "0px 0px -100px 0px"
+    };
+
+    const appearOnScroll = new IntersectionObserver(function(entries, appearOnScroll) {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) {
+                return;
+            } else {
+                entry.target.classList.add('is-visible');
+                appearOnScroll.unobserve(entry.target);
+            }
+        });
+    }, appearOptions);
+
+    faders.forEach(fader => {
+        appearOnScroll.observe(fader);
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            if (href !== '#') {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

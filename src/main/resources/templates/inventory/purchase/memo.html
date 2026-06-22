@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="'Purchase Memo #PO-' + ${purchase?.id} + ' — eLoan SaaS'">Purchase Memo — eLoan SaaS</title>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <link rel="stylesheet"
+        th:href="@{/css/dashboard.css}">
+
+  <link rel="stylesheet"
+        th:href="@{/css/product.css}">
+
+  <link rel="stylesheet" th:href="@{/css/purchase.css}">
+  <style>
+    body { background: #e8edf3; }
+
+    /* A4 memo page */
+    .memo-page {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.12);
+      overflow: hidden;
+    }
+
+    /* Print toolbar */
+    .print-toolbar {
+      background: #1e293b;
+      padding: .875rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .print-toolbar .toolbar-brand {
+      color: white;
+      font-size: .875rem;
+      font-weight: 600;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Memo header */
+    .memo-head {
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #0ea5e9 100%);
+      padding: 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .memo-head::before {
+      content: '';
+      position: absolute;
+      top: -50%; right: -15%;
+      width: 350px; height: 350px;
+      background: rgba(255,255,255,.05);
+      border-radius: 50%;
+    }
+
+    .memo-head::after {
+      content: '';
+      position: absolute;
+      bottom: -60%; left: 30%;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,.04);
+      border-radius: 50%;
+    }
+
+    .memo-body { padding: 2.5rem; }
+
+    .memo-party-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .party-label {
+      font-size: .65rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: #94a3b8;
+      font-weight: 700;
+      margin-bottom: .375rem;
+    }
+
+    .party-name {
+      font-size: 1.0625rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: .25rem;
+    }
+
+    .party-detail {
+      font-size: .8125rem;
+      color: #64748b;
+    }
+
+    /* Items table */
+    .memo-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-bottom: 1.75rem;
+      font-size: .875rem;
+    }
+
+    .memo-table thead th {
+      background: #1e40af;
+      color: white;
+      padding: .75rem 1rem;
+      font-size: .6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      white-space: nowrap;
+    }
+
+    .memo-table thead th:first-child { border-radius: 8px 0 0 0; }
+    .memo-table thead th:last-child  { border-radius: 0 8px 0 0; }
+
+    .memo-table tbody tr:nth-child(even) { background: #f8fafc; }
+
+    .memo-table tbody td {
+      padding: .75rem 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      color: #0f172a;
+      vertical-align: middle;
+    }
+
+    .memo-table tfoot td {
+      padding: .625rem 1rem;
+      font-size: .875rem;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    /* Billing summary */
+    .memo-billing {
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      max-width: 320px;
+      margin-left: auto;
+      margin-bottom: 2rem;
+    }
+
+    .memo-billing-header {
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+      color: white;
+      padding: .625rem 1rem;
+      font-size: .8125rem;
+      font-weight: 700;
+    }
+
+    .memo-billing-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .5rem 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: .875rem;
+    }
+
+    .memo-billing-row .mb-label { color: #64748b; font-weight: 500; }
+    .memo-billing-row .mb-value { font-weight: 700; font-family: 'JetBrains Mono', monospace; color: #0f172a; }
+    .memo-billing-row.final-row { background: #eff6ff; }
+    .memo-billing-row.final-row .mb-label { color: #2563eb; font-weight: 700; }
+    .memo-billing-row.final-row .mb-value { color: #2563eb; font-size: 1rem; }
+    .memo-billing-row.due-row .mb-value { color: #ef4444; }
+
+    /* Signatures */
+    .memo-sigs {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2rem;
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px dashed #cbd5e1;
+    }
+
+    .sig-block { text-align: center; }
+
+    .sig-line {
+      border-top: 1.5px solid #0f172a;
+      margin-top: 3.5rem;
+      padding-top: .375rem;
+      font-size: .75rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    /* Footer */
+    .memo-footer {
+      text-align: center;
+      padding: 1.25rem 2.5rem;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      font-size: .75rem;
+      color: #94a3b8;
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: white; margin: 0; }
+      .print-toolbar { display: none; }
+      .memo-page {
+        margin: 0;
+        box-shadow: none;
+        border-radius: 0;
+        max-width: 100%;
+      }
+      .memo-head { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .memo-table thead th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .memo-billing-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @page { size: A4; margin: 10mm; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Print Toolbar (screen only) -->
+  <div class="print-toolbar no-print">
+    <div class="toolbar-brand">
+      <i class="bi bi-printer me-2"></i>Purchase Memo — Print Preview
+    </div>
+    <div class="d-flex gap-2">
+      <a th:href="@{/inventory/purchase/{id}(id=${purchase?.id})}"
+         style="color:rgba(255,255,255,.7);text-decoration:none;font-size:.8125rem;display:flex;align-items:center;gap:.375rem;padding:.375rem .75rem;border-radius:6px;border:1px solid rgba(255,255,255,.2);">
+        <i class="bi bi-arrow-left"></i> Back to View
+      </a>
+      <a th:href="@{/inventory/purchase/list}"
+         style="color:rgba(255,255,255,.7);text-decoration:none;font-size:.8125rem;display:flex;align-items:center;gap:.375rem;padding:.375rem .75rem;border-radius:6px;border:1px solid rgba(255,255,255,.2);">
+        <i class="bi bi-list-ul"></i> All Orders
+      </a>
+      <button onclick="window.print()"
+              style="background:#2563eb;color:white;border:none;border-radius:6px;padding:.4rem 1.125rem;font-size:.8125rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.375rem;font-family:'Plus Jakarta Sans',sans-serif;">
+        <i class="bi bi-printer"></i> Print / Save PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Memo Page -->
+  <div class="memo-page">
+
+    <!-- Memo Head -->
+    <div class="memo-head">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3" style="position:relative;z-index:1;">
+        <div>
+          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.6);font-weight:700;margin-bottom:.375rem;">eLoan SaaS</div>
+          <div style="font-size:1.625rem;font-weight:800;color:white;letter-spacing:-.03em;line-height:1;">Purchase Memo</div>
+          <div style="color:rgba(255,255,255,.7);font-size:.875rem;margin-top:.25rem;">Inventory Purchase Record</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:.75rem 1.375rem;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.15);">
+            <div style="font-size:.6875rem;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:.25rem;">Invoice Number</div>
+            <div style="font-size:1.375rem;font-weight:800;color:white;font-family:'JetBrains Mono',monospace;" th:text="'#PO-' + ${purchase?.id}"></div>
+          </div>
+          <div style="margin-top:.75rem;">
+            <span th:if="${(purchase?.dueAmount ?: 0) <= 0}"
+                  style="background:rgba(16,185,129,.25);color:#6ee7b7;padding:.3rem .875rem;border-radius:100px;font-size:.75rem;font-weight:700;border:1px solid rgba(16,185,129,.3);">
+              ✓ FULLY PAID
+            </span>
+            <span th:if="${(purchase?.dueAmount ?: 0) > 0}"
+                  style="background:rgba(245,158,11,.25);color:#fcd34d;padding:.3rem .875rem;border-radius:100px;font-size:.75rem;font-weight:700;border:1px solid rgba(245,158,11,.3);">
+              ⚠ PAYMENT DUE
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Memo Body -->
+    <div class="memo-body">
+
+      <!-- Party Info -->
+      <div class="memo-party-grid">
+        <div>
+          <div class="party-label"><i class="bi bi-building me-1"></i>Issued By</div>
+          <div class="party-name">eLoan SaaS</div>
+          <div class="party-detail">Inventory & ERP Platform</div>
+        </div>
+        <div>
+          <div class="party-label"><i class="bi bi-person me-1"></i>Supplier</div>
+          <div class="party-name" th:text="${purchase?.supplier?.name ?: '—'}"></div>
+          <div class="party-detail" th:text="${purchase?.supplier?.phone ?: ''}"></div>
+          <div class="party-detail" th:text="${purchase?.supplier?.email ?: ''}"></div>
+        </div>
+      </div>
+
+      <!-- Product Table -->
+      <table class="memo-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Category</th>
+            <th>Product</th>
+            <th style="text-align:center">Qty</th>
+            <th style="text-align:right">Unit Price</th>
+            <th style="text-align:right">Row Disc.</th>
+            <th style="text-align:right">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="item,stat : ${purchase?.items}">
+            <td style="color:#94a3b8;" th:text="${stat.count}"></td>
+            <td>
+              <span style="background:#eff6ff;color:#2563eb;padding:.2rem .6rem;border-radius:100px;font-size:.75rem;font-weight:600;"
+                    th:text="${item.product?.category?.name ?: '—'}"></span>
+            </td>
+            <td style="font-weight:600;" th:text="${item.product?.name ?: '—'}"></td>
+            <td style="text-align:center;font-weight:600;" th:text="${item.quantity}"></td>
+            <td style="text-align:right;font-family:'JetBrains Mono',monospace;" th:text="'৳' + ${#numbers.formatDecimal(item.unitPrice ?: 0, 1, 2)}"></td>
+            <td style="text-align:right;font-family:'JetBrains Mono',monospace;color:#d97706;" th:text="'৳' + ${#numbers.formatDecimal(item.discount ?: 0, 1, 2)}"></td>
+            <td style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;color:#2563eb;" th:text="'৳' + ${#numbers.formatDecimal(item.subtotal ?: 0, 1, 2)}"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Note -->
+      <div th:if="${purchase?.note != null and !#strings.isEmpty(purchase?.note)}"
+           style="background:#f8fafc;border-radius:8px;padding:.75rem 1rem;border:1px solid #e2e8f0;margin-bottom:1.5rem;font-size:.875rem;">
+        <span style="font-weight:700;color:#64748b;font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;">Note: </span>
+        <span th:text="${purchase?.note}" style="color:#374151;"></span>
+      </div>
+
+      <!-- Billing Summary -->
+      <div class="memo-billing">
+        <div class="memo-billing-header"><i class="bi bi-receipt me-2"></i>Payment Summary</div>
+        <div class="memo-billing-row">
+          <span class="mb-label">Subtotal</span>
+          <span class="mb-value" th:text="'৳' + ${#numbers.formatDecimal(purchase?.subtotal ?: 0, 1, 2)}"></span>
+        </div>
+        <div class="memo-billing-row">
+          <span class="mb-label" style="color:#d97706;">Invoice Discount</span>
+          <span class="mb-value" style="color:#d97706;" th:text="'- ৳' + ${#numbers.formatDecimal(purchase?.discount ?: 0, 1, 2)}"></span>
+        </div>
+        <div class="memo-billing-row final-row">
+          <span class="mb-label">Final Amount</span>
+          <span class="mb-value" th:text="'৳' + ${#numbers.formatDecimal(purchase?.finalAmount ?: 0, 1, 2)}"></span>
+        </div>
+        <div class="memo-billing-row">
+          <span class="mb-label" style="color:#059669;">Advance Paid</span>
+          <span class="mb-value" style="color:#059669;" th:text="'৳' + ${#numbers.formatDecimal(purchase?.advancePaid ?: 0, 1, 2)}"></span>
+        </div>
+        <div class="memo-billing-row due-row" style="border-bottom:none;">
+          <span class="mb-label fw-bold">Amount Due</span>
+          <span class="mb-value" th:text="'৳' + ${#numbers.formatDecimal(purchase?.dueAmount ?: 0, 1, 2)}"></span>
+        </div>
+      </div>
+
+      <!-- Signatures -->
+      <div class="memo-sigs">
+        <div class="sig-block">
+          <div class="sig-line">Received By</div>
+        </div>
+        <div class="sig-block">
+          <div class="sig-line">Authorized By</div>
+        </div>
+        <div class="sig-block">
+          <div class="sig-line">Supplier Signature</div>
+        </div>
+      </div>
+
+    </div><!-- /memo-body -->
+
+    <!-- Footer -->
+    <div class="memo-footer">
+      <div>Generated by <strong>eLoan SaaS</strong> · Inventory &amp; ERP Management Platform</div>
+      <div style="margin-top:.25rem;">Invoice <strong th:text="'#PO-' + ${purchase?.id}"></strong> · This is a computer generated document</div>
+    </div>
+
+  </div><!-- /memo-page -->
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<!--/*
+    eLoan SaaS — topbar.html
+    Thymeleaf Fragment: topbar
+    Usage: th:replace="fragments/topbar :: topbar"
+*/-->
+<body>
+
+<!-- =============================================
+     TOPBAR FRAGMENT
+     ============================================= -->
+<header th:fragment="topbar" class="topbar" id="appTopbar" role="banner">
+
+  <!-- Mobile Sidebar Toggle -->
+  <button class="topbar-toggle" id="sidebarToggle" aria-label="Toggle sidebar" aria-expanded="false">
+    <i class="bi bi-list"></i>
+  </button>
+
+  <!-- Search -->
+  <div class="topbar-search">
+    <i class="bi bi-search topbar-search-icon"></i>
+    <input type="search"
+           placeholder="Search anything..."
+           aria-label="Search dashboard"
+           autocomplete="off"
+           id="topbarSearch">
+  </div>
+
+  <!-- Right Section -->
+  <div class="topbar-right">
+
+    <!-- Business Name (desktop) -->
+    <span class="d-none d-md-inline"
+          style="font-size:0.8rem; font-weight:600; color:var(--text-muted); white-space:nowrap;">
+      <i class="bi bi-building me-1"></i>
+      <span th:text="${businessName ?: 'My Business Ltd.'}">My Business Ltd.</span>
+    </span>
+
+    <div class="topbar-divider"></div>
+
+    <!-- Notifications -->
+    <div class="dropdown">
+      <button class="topbar-icon-btn"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+              aria-label="Notifications">
+        <i class="bi bi-bell"></i>
+        <span th:if="${notificationCount != null and notificationCount > 0}"
+              class="topbar-badge"></span>
+      </button>
+      <!-- Notification Dropdown -->
+      <ul class="dropdown-menu dropdown-menu-end topbar-dropdown" style="min-width:290px; padding:8px;">
+        <li>
+          <div style="padding:6px 12px 10px; border-bottom:1px solid var(--border); margin-bottom:6px;">
+            <span style="font-size:0.8rem; font-weight:700; color:var(--text-primary);">Notifications</span>
+            <a href="#" style="font-size:0.72rem; color:var(--primary); float:right; font-weight:600;">Mark all read</a>
+          </div>
+        </li>
+        <li>
+          <a class="dropdown-item" href="#" style="flex-direction:column; align-items:flex-start; gap:2px;">
+            <span style="font-size:0.82rem; font-weight:600; color:var(--text-primary);">Low stock alert</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">5 products are running low</span>
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="#" style="flex-direction:column; align-items:flex-start; gap:2px;">
+            <span style="font-size:0.82rem; font-weight:600; color:var(--text-primary);">New sale recorded</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Invoice #INV-1042 — ৳ 4,200</span>
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" href="#" style="flex-direction:column; align-items:flex-start; gap:2px;">
+            <span style="font-size:0.82rem; font-weight:600; color:var(--text-primary);">Payment overdue</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Karim Traders — ৳ 12,000 due</span>
+          </a>
+        </li>
+        <li><hr class="dropdown-divider" style="border-color:var(--border);"></li>
+        <li>
+          <a th:href="@{/notifications}"
+             style="display:block; text-align:center; font-size:0.8rem; font-weight:600; color:var(--primary); padding:8px;">
+            View all notifications
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Help -->
+    <button class="topbar-icon-btn d-none d-sm-flex" aria-label="Help">
+      <i class="bi bi-question-circle"></i>
+    </button>
+
+    <div class="topbar-divider d-none d-sm-block"></div>
+
+    <!-- Profile Dropdown -->
+    <div class="dropdown">
+      <div class="topbar-profile"
+           data-bs-toggle="dropdown"
+           aria-expanded="false"
+           role="button"
+           tabindex="0"
+           aria-label="User menu">
+        <div class="topbar-avatar"
+             th:text="${#strings.substring(userName ?: 'Admin', 0, 2).toUpperCase()}">AD</div>
+        <div class="topbar-profile-info">
+          <div class="topbar-profile-name" th:text="${userName ?: 'Admin User'}">Admin User</div>
+          <div class="topbar-profile-role" th:text="${userRole ?: 'Administrator'}">Administrator</div>
+        </div>
+        <i class="bi bi-chevron-down" style="font-size:0.72rem; color:var(--text-muted); margin-left:2px;"></i>
+      </div>
+
+      <ul class="dropdown-menu dropdown-menu-end topbar-dropdown">
+        <li>
+          <div style="padding:8px 12px 10px; border-bottom:1px solid var(--border); margin-bottom:4px;">
+            <div style="font-size:0.8rem; font-weight:700; color:var(--text-primary);" th:text="${userName ?: 'Admin User'}">Admin User</div>
+            <div style="font-size:0.72rem; color:var(--text-muted);" th:text="${userEmail ?: 'admin@eloan.com'}">admin@eloan.com</div>
+          </div>
+        </li>
+        <li>
+          <a class="dropdown-item" th:href="@{/profile}">
+            <i class="bi bi-person"></i> My Profile
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" th:href="@{/settings}">
+            <i class="bi bi-gear"></i> Settings
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item" th:href="@{/subscription}">
+            <i class="bi bi-star"></i> Subscription
+          </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <a class="dropdown-item text-danger" th:href="@{/logout}">
+            <i class="bi bi-box-arrow-right"></i> Logout
+          </a>
+        </li>
+      </ul>
+    </div>
+
+  </div><!-- /topbar-right -->
+
+</header>
+
+</body>
+</html>

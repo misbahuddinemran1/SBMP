@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>All Sales</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --bg:        #f4f6fb; --surface:   #ffffff; --border:    #dde2ee;
+            --accent:    #2563eb; --accent2:   #059669; --accent3:   #dc2626;
+            --text:      #1a1f36; --muted:     #6b7280; --radius:12px;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+        body { background:var(--bg); color:var(--text); font-family:'DM Mono',monospace; min-height:100vh; }
+
+        /* NAV */
+        .topbar {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:16px 32px; border-bottom:1px solid var(--border);
+            background:var(--surface); position:sticky; top:0; z-index:100;
+        }
+        .topbar-logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem; color:var(--accent); }
+        .topbar-logo span { color:var(--text); }
+        .nav-links { display:flex; gap:8px; }
+        .nav-links a {
+            color:var(--muted); text-decoration:none; font-size:0.75rem;
+            padding:6px 14px; border-radius:6px; transition:all .2s;
+            letter-spacing:.5px; text-transform:uppercase;
+        }
+        .nav-links a:hover, .nav-links a.active { background:var(--border); color:var(--accent); }
+        .btn-new {
+            background:var(--accent);color:#fff; font-family:'Syne',sans-serif;
+            font-weight:700; font-size:0.8rem; padding:8px 20px;
+            border-radius:8px; text-decoration:none; transition:opacity .2s;
+        }
+        .btn-new:hover { opacity:.85; }
+
+        .main { padding:32px; max-width:1400px; margin:0 auto; }
+
+        /* PAGE HEADER */
+        .page-header {
+            display:flex; align-items:center; justify-content:space-between;
+            margin-bottom:24px;
+        }
+        .page-header h1 {
+            font-family:'Syne',sans-serif; font-weight:800; font-size:1.5rem;
+        }
+
+        /* FILTER BAR */
+        .filter-bar {
+            display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;
+        }
+        .filter-bar input, .filter-bar select {
+            background:var(--surface); border:1px solid var(--border);
+            color:var(--text); font-family:'DM Mono',monospace;
+            font-size:0.78rem; padding:8px 12px; border-radius:8px;
+            outline:none; transition:border-color .2s;
+        }
+        .filter-bar input:focus, .filter-bar select:focus { border-color:var(--accent); }
+        .filter-bar input { flex:1; min-width:200px; }
+        .filter-bar select option { background:var(--surface); }
+
+        /* TABLE CARD */
+        .table-card {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:var(--radius); overflow:hidden;
+        }
+        .table-wrapper { overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; font-size:0.78rem; }
+        thead tr { border-bottom:1px solid var(--border); background:#f8faff; }
+        th {
+            font-size:0.65rem; letter-spacing:1.2px; text-transform:uppercase;
+            color:var(--muted); padding:12px 14px; text-align:left;
+            font-weight:400; white-space:nowrap;
+        }
+        th.sortable { cursor:pointer; user-select:none; }
+        th.sortable:hover { color:var(--accent); }
+        td { padding:12px 14px; border-bottom:1px solid #eef1f8; color:var(--text); white-space:nowrap; }
+        tbody tr { transition:background .15s; }
+        tbody tr:hover td { background:#f0f4ff88; }
+        tbody tr:last-child td { border-bottom:none; }
+
+        .sale-link {
+            color:var(--accent); text-decoration:none; font-weight:500;
+        }
+        .sale-link:hover { text-decoration:underline; }
+
+        /* BADGE */
+        .badge {
+            display:inline-block; padding:3px 9px; border-radius:4px;
+            font-size:0.63rem; font-weight:500; letter-spacing:.6px;
+            text-transform:uppercase;
+        }
+        .badge-draft      { background:#eff6ff; color:#3b82f6; border:1px solid #bfdbfe; }
+        .badge-completed  { background:#dcfce7; color:var(--accent2); border:1px solid #16a34a; }
+        .badge-cancelled  { background:#fee2e2; color:var(--accent3); border:1px solid #dc2626; }
+        .badge-returned   { background:#fff7ed; color:#f0a040; border:1px solid #d97706; }
+
+        /* DUE INDICATOR */
+        .due-positive { color:var(--accent3); }
+        .due-zero     { color:var(--muted); }
+
+        /* ACTION BUTTONS */
+        .actions { display:flex; gap:6px; align-items:center; }
+        .btn-icon {
+            background:transparent; border:1px solid var(--border);
+            color:var(--muted); font-size:0.72rem; padding:4px 10px;
+            border-radius:6px; cursor:pointer; text-decoration:none;
+            transition:all .2s; font-family:'DM Mono',monospace;
+        }
+        .btn-icon:hover { border-color:var(--accent); color:var(--accent); }
+        .btn-icon.danger:hover { border-color:var(--accent3); color:var(--accent3); }
+
+        /* PAGINATION / FOOTER */
+        .table-footer {
+            padding:14px 16px; border-top:1px solid var(--border);
+            display:flex; justify-content:space-between; align-items:center;
+            font-size:0.72rem; color:var(--muted);
+        }
+        .empty {
+            text-align:center; color:var(--muted); padding:56px;
+            font-size:0.82rem;
+        }
+
+        /* ALERTS */
+        .alert { padding:12px 16px; border-radius:var(--radius); font-size:0.82rem; margin-bottom:20px; }
+        .alert-success { background:#dcfce7; border:1px solid #16a34a; color:var(--accent2); }
+        .alert-error   { background:#fee2e2; border:1px solid #dc2626; color:var(--accent3); }
+
+        @media (max-width:768px) {
+            .main { padding:16px; }
+            .topbar { padding:12px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+    <div class="topbar-logo">SBMP<span> / Sales</span></div>
+    <div class="nav-links">
+        <a th:href="@{/sales}">Dashboard</a>
+        <a th:href="@{/sales/list}" class="active">All Sales</a>
+    </div>
+    <a th:href="@{/sales/new}" class="btn-new">+ New Sale</a>
+</nav>
+
+<div class="main">
+    <!-- ALERTS -->
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <h1>All Sales</h1>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+        <input type="text" id="searchInput" placeholder="Search invoice, customer…" oninput="filterTable()"/>
+        <select id="statusFilter" onchange="filterTable()">
+            <option value="">All Status</option>
+            <option value="DRAFT">Draft</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="CANCELLED">Cancelled</option>
+            <option value="RETURNED">Returned</option>
+        </select>
+        <input type="date" id="dateFrom" onchange="filterTable()"/>
+        <input type="date" id="dateTo"   onchange="filterTable()"/>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+        <div class="table-wrapper">
+            <table id="salesTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th class="sortable">Invoice</th>
+                        <th>Customer</th>
+                        <th class="sortable">Date</th>
+                        <th>Subtotal</th>
+                        <th>Discount</th>
+                        <th>Grand Total</th>
+                        <th>Paid</th>
+                        <th>Due</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="salesBody">
+                    <tr th:if="${#lists.isEmpty(sales)}">
+                        <td colspan="11" class="empty">No sales found</td>
+                    </tr>
+                    <tr th:each="s, iStat : ${sales}"
+                        th:data-status="${s.status}"
+                        th:data-date="${s.saleDate}">
+                        <td th:text="${iStat.index + 1}">1</td>
+                        <td>
+                            <a th:href="@{'/sales/' + ${s.id}}"
+                               th:text="${s.saleNumber}"
+                               class="sale-link"></a>
+                        </td>
+                        <td th:text="${s.customerName != null ? s.customerName : '—'}">—</td>
+                        <td th:text="${#temporals.format(s.saleDate,'dd MMM yyyy')}">—</td>
+                        <td>৳<span th:text="${#numbers.formatDecimal(s.subtotal,1,'COMMA',2,'POINT')}">0.00</span></td>
+                        <td>৳<span th:text="${#numbers.formatDecimal(s.totalDiscount,1,'COMMA',2,'POINT')}">0.00</span></td>
+                        <td><strong>৳<span th:text="${#numbers.formatDecimal(s.grandTotal,1,'COMMA',2,'POINT')}">0.00</span></strong></td>
+                        <td>৳<span th:text="${#numbers.formatDecimal(s.paidAmount,1,'COMMA',2,'POINT')}">0.00</span></td>
+                        <td>
+                            <span th:classappend="${s.dueAmount != null and s.dueAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0} ? 'due-positive' : 'due-zero'">
+                                ৳<span th:text="${#numbers.formatDecimal(s.dueAmount,1,'COMMA',2,'POINT')}">0.00</span>
+                            </span>
+                        </td>
+                        <td>
+                            <span th:class="'badge badge-' + ${#strings.toLowerCase(s.status.name())}"
+                                  th:text="${s.status}"></span>
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <a th:href="@{'/sales/' + ${s.id}}" class="btn-icon">View</a>
+                                <a th:href="@{'/sales/' + ${s.id} + '/edit'}"
+                                   th:if="${s.status.name() == 'DRAFT'}"
+                                   class="btn-icon">Edit</a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-footer">
+            <span id="rowCount">Showing all records</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    function filterTable() {
+        const q      = document.getElementById('searchInput').value.toLowerCase();
+        const status = document.getElementById('statusFilter').value.toUpperCase();
+        const from   = document.getElementById('dateFrom').value;
+        const to     = document.getElementById('dateTo').value;
+        const rows   = document.querySelectorAll('#salesBody tr[data-status]');
+        let visible  = 0;
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            const rStatus = row.dataset.status || '';
+            const rDate   = row.dataset.date || '';
+            const matchQ  = !q      || text.includes(q);
+            const matchS  = !status || rStatus === status;
+            const matchF  = !from   || rDate >= from;
+            const matchT  = !to     || rDate <= to;
+            const show    = matchQ && matchS && matchF && matchT;
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        document.getElementById('rowCount').textContent =
+            `Showing ${visible} of ${rows.length} records`;
+    }
+    filterTable();
+</script>
+</body>
+</html>

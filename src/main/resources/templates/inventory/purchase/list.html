@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Purchase Invoices – eLoan SaaS</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/purchase.css}">
+</head>
+<body class="erp-body">
+
+<!-- Sidebar -->
+<div th:replace="~{dashboard/fragments/sidebar :: sidebar}"></div>
+
+<!-- Main Wrapper -->
+<div class="erp-main" id="erpMain">
+
+    <!-- Topbar -->
+    <div th:replace="~{dashboard/fragments/topbar :: topbar}"></div>
+
+    <!-- Page Content -->
+    <main class="erp-content">
+
+        <!-- ── PAGE HEADER ──────────────────────────────────── -->
+        <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb breadcrumb-erp mb-1">
+                        <li class="breadcrumb-item"><a th:href="@{/dashboard}"><i class="bi bi-house-door"></i> Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Purchase</li>
+                    </ol>
+                </nav>
+                <h1 class="page-title mb-0">Purchase Invoices</h1>
+                <p class="page-subtitle mb-0">All purchase records for your business</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/inventory/purchase/new}" class="btn btn-primary-erp">
+                    <i class="bi bi-plus-lg me-2"></i>New Purchase
+                </a>
+            </div>
+        </div>
+
+        <!-- ── FLASH MESSAGES ──────────────────────────────── -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- ── SUMMARY CARDS ──────────────────────────────── -->
+        <div class="row g-3 mb-4">
+
+            <div class="col-6 col-md-3">
+                <div class="erp-stat-card">
+                    <div class="erp-stat-card__icon">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <div class="erp-stat-card__body">
+                        <p class="erp-stat-card__label">Total Invoices</p>
+                        <h3 class="erp-stat-card__value"
+                            th:text="${purchases != null ? purchases.size() : 0}">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="erp-stat-card">
+                    <div class="erp-stat-card__icon erp-stat-card__icon--blue">
+                        <i class="bi bi-bag-check"></i>
+                    </div>
+                    <div class="erp-stat-card__body">
+                        <p class="erp-stat-card__label">Total Purchase</p>
+                        <h3 class="erp-stat-card__value">
+                            ৳<span th:text="${#numbers.formatDecimal(#aggregates.sum(purchases.![grandTotal]), 1, 2)}">0.00</span>
+                        </h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="erp-stat-card erp-stat-card--danger">
+                    <div class="erp-stat-card__icon erp-stat-card__icon--red">
+                        <i class="bi bi-exclamation-circle"></i>
+                    </div>
+                    <div class="erp-stat-card__body">
+                        <p class="erp-stat-card__label">Total Due</p>
+                        <h3 class="erp-stat-card__value text-danger">
+                            ৳<span th:text="${#numbers.formatDecimal(#aggregates.sum(purchases.![dueAmount]), 1, 2)}">0.00</span>
+                        </h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="erp-stat-card erp-stat-card--success">
+                    <div class="erp-stat-card__icon erp-stat-card__icon--green">
+                        <i class="bi bi-check2-circle"></i>
+                    </div>
+                    <div class="erp-stat-card__body">
+                        <p class="erp-stat-card__label">Total Paid</p>
+                        <h3 class="erp-stat-card__value text-success">
+                            ৳<span th:text="${#numbers.formatDecimal(#aggregates.sum(purchases.![paidAmount]), 1, 2)}">0.00</span>
+                        </h3>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── FILTER & SEARCH ────────────────────────────── -->
+        <div class="erp-card mb-3">
+            <div class="erp-card__body py-3">
+                <div class="d-flex align-items-center flex-wrap gap-3">
+
+                    <!-- Search -->
+                    <div class="erp-search-wrap flex-grow-1" style="max-width:320px;">
+                        <i class="bi bi-search erp-search-icon"></i>
+                        <input type="text"
+                               id="search-input"
+                               class="form-control erp-input erp-search-input"
+                               placeholder="Search invoice, supplier…"
+                               oninput="filterTable()">
+                    </div>
+
+                    <!-- Status Filter Chips -->
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn erp-chip erp-chip--active" data-status="ALL"       onclick="filterByStatus(this)">All</button>
+                        <button class="btn erp-chip"                  data-status="COMPLETED"  onclick="filterByStatus(this)">
+                            <i class="bi bi-check-circle me-1"></i>Completed
+                        </button>
+                        <button class="btn erp-chip"                  data-status="DRAFT"      onclick="filterByStatus(this)">
+                            <i class="bi bi-pencil me-1"></i>Draft
+                        </button>
+                        <button class="btn erp-chip"                  data-status="CANCELLED"  onclick="filterByStatus(this)">
+                            <i class="bi bi-x-circle me-1"></i>Cancelled
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ── TABLE CARD ─────────────────────────────────── -->
+        <div class="erp-card mb-3">
+            <div class="erp-card__body p-0">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0 erp-table" id="purchase-list-table">
+                        <thead>
+                        <tr>
+                            <th style="width:48px;">#</th>
+                            <th>Invoice No</th>
+                            <th>Supplier</th>
+                            <th>Date</th>
+                            <th>Grand Total</th>
+                            <th>Paid</th>
+                            <th>Due</th>
+                            <th>Status</th>
+                            <th style="width:100px;text-align:center;">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        <!-- ROWS -->
+                        <tr th:each="p, stat : ${purchases}"
+                            th:attr="data-status=${p.status}, data-search=${p.purchaseNumber + ' ' + p.supplierName}"
+                            class="table-row">
+
+                            <td class="text-muted" style="font-size:.8125rem;" th:text="${stat.index + 1}">1</td>
+
+                            <td>
+                                <span class="fw-semibold" style="font-size:.875rem; color:var(--erp-primary);"
+                                      th:text="${p.purchaseNumber}">INV-0001</span>
+                            </td>
+
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="supplier-avatar-sm"
+                                         th:text="${#strings.substring(p.supplierName, 0, 1)}">S</div>
+                                    <span style="font-size:.875rem;" th:text="${p.supplierName}">Supplier Name</span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <span style="font-size:.8125rem; color:var(--erp-text-muted);"
+                                      th:text="${#temporals.format(p.purchaseDate, 'dd MMM yyyy')}">01 Jan 2025</span>
+                            </td>
+
+                            <td>
+                                <span class="fw-semibold" style="font-size:.875rem;"
+                                      th:text="'৳' + ${#numbers.formatDecimal(p.grandTotal, 1, 2)}">৳0.00</span>
+                            </td>
+
+                            <td>
+                                <span class="text-success fw-semibold" style="font-size:.875rem;"
+                                      th:text="'৳' + ${#numbers.formatDecimal(p.paidAmount, 1, 2)}">৳0.00</span>
+                            </td>
+
+                            <td>
+                                <span style="font-size:.875rem;"
+                                      th:classappend="${p.dueAmount != null and p.dueAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0} ? 'text-danger fw-semibold' : 'text-muted'"
+                                      th:text="'৳' + ${#numbers.formatDecimal(p.dueAmount, 1, 2)}">৳0.00</span>
+                            </td>
+
+                            <td>
+                                <span class="erp-status-badge"
+                                      th:classappend="${p.status.name()}"
+                                      th:text="${p.status}">DRAFT</span>
+                            </td>
+
+                            <td>
+                                <div class="d-flex align-items-center justify-content-center gap-1">
+                                    <a th:href="@{/inventory/purchase/{id}(id=${p.id})}"
+                                       class="btn erp-icon-btn erp-icon-btn--view"
+                                       title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a th:href="@{/inventory/purchase/{id}/edit(id=${p.id})}"
+                                       class="btn erp-icon-btn erp-icon-btn--edit"
+                                       title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </td>
+
+                        </tr>
+
+                        <!-- EMPTY SEARCH STATE -->
+                        <tr id="empty-row" class="d-none">
+                            <td colspan="9">
+                                <div class="text-center py-5 text-muted">
+                                    <i class="bi bi-search d-block mb-2" style="font-size:2.5rem;opacity:.2;"></i>
+                                    <p class="mb-1 fw-semibold">No Purchases Found</p>
+                                    <p class="small mb-0">Try a different search or filter</p>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- NO DATA AT ALL -->
+                        <tr th:if="${purchases == null or purchases.isEmpty()}">
+                            <td colspan="9">
+                                <div class="text-center py-5 text-muted">
+                                    <i class="bi bi-cart d-block mb-2" style="font-size:2.5rem;opacity:.2;"></i>
+                                    <p class="mb-1 fw-semibold">No Purchases Yet</p>
+                                    <p class="small mb-0">Click "New Purchase" to get started</p>
+                                </div>
+                            </td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── TABLE FOOTER ───────────────────────────────── -->
+        <div class="d-flex justify-content-end pb-4">
+            <span id="row-count" class="text-muted" style="font-size:.8125rem;">Showing all records</span>
+        </div>
+
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/dashboard.js}"></script>
+
+<script>
+    let activeStatus = 'ALL';
+
+    function filterTable() {
+        const query  = document.getElementById('search-input').value.toLowerCase();
+        const rows   = document.querySelectorAll('#purchase-list-table .table-row');
+        let visible  = 0;
+
+        rows.forEach(row => {
+            const search     = (row.getAttribute('data-search') || '').toLowerCase();
+            const status     = row.getAttribute('data-status') || '';
+            const matchSearch = search.includes(query);
+            const matchStatus = activeStatus === 'ALL' || status === activeStatus;
+
+            if (matchSearch && matchStatus) {
+                row.style.display = '';
+                visible++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        const emptyRow = document.getElementById('empty-row');
+        if (emptyRow) emptyRow.classList.toggle('d-none', visible > 0);
+
+        document.getElementById('row-count').textContent =
+            visible === rows.length
+                ? `Showing all ${rows.length} records`
+                : `Showing ${visible} of ${rows.length} records`;
+    }
+
+    function filterByStatus(btn) {
+        document.querySelectorAll('.erp-chip').forEach(c => c.classList.remove('erp-chip--active'));
+        btn.classList.add('erp-chip--active');
+        activeStatus = btn.getAttribute('data-status');
+        filterTable();
+    }
+</script>
+
+</body>
+</html>
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en"-->
+<!--      xmlns:th="http://www.thymeleaf.org"-->
+<!--      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"-->
+<!--      layout:decorate="~{layout/main}">-->
+
+<!--<head>-->
+<!--    <meta charset="UTF-8"/>-->
+<!--    <title>Purchase List</title>-->
+
+<!--    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"-->
+<!--          rel="stylesheet"/>-->
+
+<!--    <link rel="stylesheet" th:href="@{/css/purchase-list.css}">-->
+<!--</head>-->
+
+<!--<body>-->
+
+<!--<div class="list-page">-->
+
+<!--    &lt;!&ndash; ══ HEADER ══ &ndash;&gt;-->
+<!--    <div class="page-header">-->
+<!--        <div>-->
+<!--            <div class="page-badge">Inventory · Purchase</div>-->
+<!--            <h2 class="page-title">Purchase Invoices</h2>-->
+<!--            <p class="page-subtitle">All purchase records for your business</p>-->
+<!--        </div>-->
+<!--        <a th:href="@{/inventory/purchase/new}" class="btn btn-primary">-->
+<!--            + New Purchase-->
+<!--        </a>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; ══ FLASH MESSAGES ══ &ndash;&gt;-->
+<!--    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>-->
+<!--    <div th:if="${error}"   class="alert alert-danger"  th:text="${error}"></div>-->
+
+<!--    &lt;!&ndash; ══ SUMMARY CARDS ══ &ndash;&gt;-->
+<!--    <div class="summary-strip">-->
+
+<!--        <div class="s-card">-->
+<!--            <span>Total Invoices</span>-->
+<!--            <strong th:text="${purchases != null ? purchases.size() : 0}">0</strong>-->
+<!--        </div>-->
+
+<!--        <div class="s-card">-->
+<!--            <span>Total Purchase</span>-->
+<!--            <strong>৳<span th:text="${#aggregates.sum(purchases.![grandTotal])}">0.00</span></strong>-->
+<!--        </div>-->
+
+<!--        <div class="s-card accent-red">-->
+<!--            <span>Total Due</span>-->
+<!--            <strong>৳<span th:text="${#aggregates.sum(purchases.![dueAmount])}">0.00</span></strong>-->
+<!--        </div>-->
+
+<!--        <div class="s-card accent-green">-->
+<!--            <span>Total Paid</span>-->
+<!--            <strong>৳<span th:text="${#aggregates.sum(purchases.![paidAmount])}">0.00</span></strong>-->
+<!--        </div>-->
+
+<!--    </div>-->
+
+<!--    &lt;!&ndash; ══ FILTER BAR ══ &ndash;&gt;-->
+<!--    <div class="filter-bar">-->
+
+<!--        <div class="search-wrap">-->
+<!--            <svg class="search-icon" width="15" height="15" viewBox="0 0 15 15" fill="none">-->
+<!--                <circle cx="6.5" cy="6.5" r="5" stroke="#8C8880" stroke-width="1.5"/>-->
+<!--                <path d="M10.5 10.5L13.5 13.5" stroke="#8C8880" stroke-width="1.5" stroke-linecap="round"/>-->
+<!--            </svg>-->
+<!--            <input type="text" id="search-input" class="search-input" placeholder="Search invoice, supplier…" oninput="filterTable()">-->
+<!--        </div>-->
+
+<!--        <div class="filter-chips">-->
+<!--            <button class="chip chip-active" data-status="ALL"      onclick="filterByStatus(this)">All</button>-->
+<!--            <button class="chip"             data-status="COMPLETED" onclick="filterByStatus(this)">Completed</button>-->
+<!--            <button class="chip"             data-status="DRAFT"     onclick="filterByStatus(this)">Draft</button>-->
+<!--            <button class="chip"             data-status="CANCELLED" onclick="filterByStatus(this)">Cancelled</button>-->
+<!--        </div>-->
+
+<!--    </div>-->
+
+<!--    &lt;!&ndash; ══ TABLE ══ &ndash;&gt;-->
+<!--    <div class="card">-->
+<!--        <div class="table-responsive">-->
+<!--            <table class="list-table" id="purchase-list-table">-->
+<!--                <thead>-->
+<!--                <tr>-->
+<!--                    <th>#</th>-->
+<!--                    <th>Invoice No</th>-->
+<!--                    <th>Supplier</th>-->
+<!--                    <th>Date</th>-->
+<!--                    <th>Grand Total</th>-->
+<!--                    <th>Paid</th>-->
+<!--                    <th>Due</th>-->
+<!--                    <th>Status</th>-->
+<!--                    <th>Action</th>-->
+<!--                </tr>-->
+<!--                </thead>-->
+<!--                <tbody>-->
+
+<!--                &lt;!&ndash; ROWS &ndash;&gt;-->
+<!--                <tr th:each="p, stat : ${purchases}"-->
+<!--                    th:attr="data-status=${p.status}, data-search=${p.purchaseNumber + ' ' + p.supplierName}"-->
+<!--                    class="table-row">-->
+
+<!--                    <td class="td-num" th:text="${stat.index + 1}">1</td>-->
+
+<!--                    <td>-->
+<!--                        <span class="invoice-num" th:text="${p.purchaseNumber}">INV-0001</span>-->
+<!--                    </td>-->
+
+<!--                    <td>-->
+<!--                        <div class="supplier-cell">-->
+<!--                            <div class="supplier-avatar" th:text="${#strings.substring(p.supplierName, 0, 1)}">S</div>-->
+<!--                            <span th:text="${p.supplierName}">Supplier Name</span>-->
+<!--                        </div>-->
+<!--                    </td>-->
+
+<!--                    <td>-->
+<!--                        <span class="date-text" th:text="${#temporals.format(p.purchaseDate, 'dd MMM yyyy')}">01 Jan 2025</span>-->
+<!--                    </td>-->
+
+<!--                    <td>-->
+<!--                        <span class="money-text" th:text="'৳' + ${#numbers.formatDecimal(p.grandTotal, 1, 2)}">৳0.00</span>-->
+<!--                    </td>-->
+
+<!--                    <td>-->
+<!--                        <span class="money-paid" th:text="'৳' + ${#numbers.formatDecimal(p.paidAmount, 1, 2)}">৳0.00</span>-->
+<!--                    </td>-->
+
+<!--                    <td>-->
+<!--                        <span class="money-due"-->
+<!--                              th:classappend="${p.dueAmount != null and p.dueAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0} ? 'has-due' : ''"-->
+<!--                              th:text="'৳' + ${#numbers.formatDecimal(p.dueAmount, 1, 2)}">৳0.00</span>-->
+<!--                    </td>-->
+
+<!--                    <td>-->
+<!--                        <span class="status-badge"-->
+<!--                              th:classappend="${p.status.name()}"-->
+<!--                              th:text="${p.status}">DRAFT</span>-->
+<!--                    </td>-->
+
+<!--                    <td>-->
+<!--                        <div class="action-group">-->
+<!--                            <a th:href="@{/inventory/purchase/{id}(id=${p.id})}"-->
+<!--                               class="act-btn act-view" title="View">-->
+<!--                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">-->
+<!--                                    <ellipse cx="7" cy="7" rx="6" ry="4" stroke="currentColor" stroke-width="1.4"/>-->
+<!--                                    <circle cx="7" cy="7" r="1.8" fill="currentColor"/>-->
+<!--                                </svg>-->
+<!--                            </a>-->
+<!--                            <a th:href="@{/inventory/purchase/{id}/edit(id=${p.id})}"-->
+<!--                               class="act-btn act-edit" title="Edit">-->
+<!--                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">-->
+<!--                                    <path d="M2 10.5L4.5 10 10.5 4a1.414 1.414 0 00-2-2L2.5 8l-.5 2.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>-->
+<!--                                </svg>-->
+<!--                            </a>-->
+<!--                        </div>-->
+<!--                    </td>-->
+
+<!--                </tr>-->
+
+<!--                &lt;!&ndash; EMPTY STATE &ndash;&gt;-->
+<!--                <tr id="empty-row" class="hidden">-->
+<!--                    <td colspan="9">-->
+<!--                        <div class="empty-state">-->
+<!--                            <svg width="48" height="48" fill="none" viewBox="0 0 48 48">-->
+<!--                                <rect x="6" y="6" width="36" height="36" rx="5" stroke="#D4CFC2" stroke-width="1.5"/>-->
+<!--                                <path d="M14 16h20M14 24h12M14 32h8" stroke="#D4CFC2" stroke-width="1.5" stroke-linecap="round"/>-->
+<!--                            </svg>-->
+<!--                            <h4>No Purchases Found</h4>-->
+<!--                            <p>Try a different search or filter</p>-->
+<!--                        </div>-->
+<!--                    </td>-->
+<!--                </tr>-->
+
+<!--                &lt;!&ndash; NO DATA AT ALL &ndash;&gt;-->
+<!--                <tr th:if="${purchases == null or purchases.isEmpty()}">-->
+<!--                    <td colspan="9">-->
+<!--                        <div class="empty-state">-->
+<!--                            <svg width="48" height="48" fill="none" viewBox="0 0 48 48">-->
+<!--                                <rect x="6" y="6" width="36" height="36" rx="5" stroke="#D4CFC2" stroke-width="1.5"/>-->
+<!--                                <path d="M14 16h20M14 24h12M14 32h8" stroke="#D4CFC2" stroke-width="1.5" stroke-linecap="round"/>-->
+<!--                            </svg>-->
+<!--                            <h4>No Purchases Yet</h4>-->
+<!--                            <p>Click "New Purchase" to get started</p>-->
+<!--                        </div>-->
+<!--                    </td>-->
+<!--                </tr>-->
+
+<!--                </tbody>-->
+<!--            </table>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; ══ FOOTER COUNT ══ &ndash;&gt;-->
+<!--    <div class="table-footer">-->
+<!--        <span id="row-count">Showing all records</span>-->
+<!--    </div>-->
+
+<!--</div>-->
+
+<!--&lt;!&ndash; ══ JS ══ &ndash;&gt;-->
+<!--<script>-->
+<!--    let activeStatus = 'ALL';-->
+
+<!--    function filterTable() {-->
+<!--        const query  = document.getElementById('search-input').value.toLowerCase();-->
+<!--        const rows   = document.querySelectorAll('#purchase-list-table .table-row');-->
+<!--        let visible  = 0;-->
+
+<!--        rows.forEach(row => {-->
+<!--            const search = (row.getAttribute('data-search') || '').toLowerCase();-->
+<!--            const status = row.getAttribute('data-status') || '';-->
+<!--            const matchSearch = search.includes(query);-->
+<!--            const matchStatus = activeStatus === 'ALL' || status === activeStatus;-->
+
+<!--            if (matchSearch && matchStatus) {-->
+<!--                row.style.display = '';-->
+<!--                visible++;-->
+<!--            } else {-->
+<!--                row.style.display = 'none';-->
+<!--            }-->
+<!--        });-->
+
+<!--        document.getElementById('empty-row').classList.toggle('hidden', visible > 0);-->
+<!--        document.getElementById('row-count').textContent =-->
+<!--            visible === rows.length-->
+<!--                ? `Showing all ${rows.length} records`-->
+<!--                : `Showing ${visible} of ${rows.length} records`;-->
+<!--    }-->
+
+<!--    function filterByStatus(btn) {-->
+<!--        document.querySelectorAll('.chip').forEach(c => c.classList.remove('chip-active'));-->
+<!--        btn.classList.add('chip-active');-->
+<!--        activeStatus = btn.getAttribute('data-status');-->
+<!--        filterTable();-->
+<!--    }-->
+<!--</script>-->
+
+<!--</body>-->
+<!--</html>-->

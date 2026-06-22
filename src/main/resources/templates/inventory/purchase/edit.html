@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Edit Purchase Invoice – eLoan SaaS</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/purchase.css}">
+</head>
+<body class="erp-body">
+
+<!-- Sidebar -->
+<div th:replace="~{dashboard/fragments/sidebar :: sidebar}"></div>
+
+<!-- Main Wrapper -->
+<div class="erp-main" id="erpMain">
+
+    <!-- Topbar -->
+    <div th:replace="~{dashboard/fragments/topbar :: topbar}"></div>
+
+    <!-- Page Content -->
+    <main class="erp-content">
+
+        <!-- ── PAGE HEADER ──────────────────────────────────── -->
+        <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb breadcrumb-erp mb-1">
+                        <li class="breadcrumb-item"><a th:href="@{/dashboard}"><i class="bi bi-house-door"></i> Dashboard</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/inventory/purchase}">Purchase</a></li>
+                        <li class="breadcrumb-item">
+                            <a th:href="@{/inventory/purchase/{id}(id=${purchase.id})}"
+                               th:text="${purchase.purchaseNumber}">INV-001</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Edit</li>
+                    </ol>
+                </nav>
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <h1 class="page-title mb-0">Edit Purchase</h1>
+                    <span class="erp-status-badge"
+                          th:classappend="${purchase.status.name()}"
+                          th:text="${purchase.status}">DRAFT</span>
+                </div>
+                <p class="page-subtitle mb-0">Modify purchase invoice details</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/inventory/purchase/{id}(id=${purchase.id})}" class="btn btn-ghost-erp">
+                    <i class="bi bi-arrow-left me-2"></i>Back to View
+                </a>
+            </div>
+        </div>
+
+        <!-- ── FLASH ──────────────────────────────────────── -->
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- ── FORM ──────────────────────────────────────────── -->
+        <form id="purchase-form"
+              th:action="@{/inventory/purchase/{id}/update(id=${purchase.id})}"
+              method="post">
+
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" id="purchase-status"           name="status"          th:value="${purchase.status}"/>
+            <input type="hidden" name="businessId"              th:value="${businessId}"/>
+            <input type="hidden" name="purchaseDate"            th:value="${purchase.purchaseDate}"/>
+            <input type="hidden" id="invoice-discount-hidden"   name="invoiceDiscount" value="0"/>
+
+            <!-- STEP 1: Supplier & Category -->
+            <div class="erp-card mb-3">
+                <div class="erp-card__header">
+                    <div class="erp-card__header-icon">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <div>
+                        <h5 class="erp-card__title mb-0">Supplier &amp; Category</h5>
+                        <p class="erp-card__subtitle mb-0">Step 1 — Select supplier and product category</p>
+                    </div>
+                </div>
+                <div class="erp-card__body">
+                    <div class="row g-3">
+
+                        <!-- Supplier -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:.8125rem;">
+                                Supplier <span class="text-danger">*</span>
+                            </label>
+                            <select name="supplierId" id="supplier-select" class="form-select erp-select">
+                                <option value="">— Select Supplier —</option>
+                                <option th:each="sup : ${suppliers}"
+                                        th:value="${sup.id}"
+                                        th:text="${sup.name}"
+                                        th:data-company="${sup.company}"
+                                        th:data-phone="${sup.phone}"
+                                        th:data-address="${sup.address}"
+                                        th:selected="${sup.id == purchase.supplierId}">
+                                </option>
+                            </select>
+
+                            <div id="supplier-card" class="supplier-info-box hidden mt-2">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <div class="supplier-avatar-sm" id="sup-avatar">S</div>
+                                    <strong id="sup-company" style="font-size:.875rem;">—</strong>
+                                </div>
+                                <div class="d-flex flex-column gap-1">
+                                    <div class="supplier-info-row">
+                                        <i class="bi bi-telephone"></i>
+                                        <span id="sup-phone">—</span>
+                                    </div>
+                                    <div class="supplier-info-row">
+                                        <i class="bi bi-geo-alt"></i>
+                                        <span id="sup-address">—</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Category Filter -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:.8125rem;">Category Filter</label>
+                            <select id="category-select" class="form-select erp-select">
+                                <option value="">— All Categories —</option>
+                                <option th:each="cat : ${categories}"
+                                        th:value="${cat.id}"
+                                        th:text="${cat.name}"
+                                        th:data-name="${cat.name}"
+                                        th:data-description="${cat.description}">
+                                </option>
+                            </select>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: Purchase Items -->
+            <div class="erp-card mb-3">
+                <div class="erp-card__header">
+                    <div class="erp-card__header-icon erp-card__header-icon--green">
+                        <i class="bi bi-cart-plus"></i>
+                    </div>
+                    <div>
+                        <h5 class="erp-card__title mb-0">Purchase Items</h5>
+                        <p class="erp-card__subtitle mb-0">Step 2 — Add products to this invoice</p>
+                    </div>
+                    <button type="button" class="btn btn-primary-erp btn-sm ms-auto" onclick="addPurchaseRow()">
+                        <i class="bi bi-plus-lg me-1"></i>Add Product
+                    </button>
+                </div>
+
+                <div class="erp-card__body p-0">
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0 erp-table purchase-table" id="purchase-table">
+                            <thead>
+                            <tr>
+                                <th style="width:160px">Category</th>
+                                <th style="width:200px">Product</th>
+                                <th style="width:110px">Stock / Last</th>
+                                <th style="width:90px">Qty</th>
+                                <th style="width:110px">Price</th>
+                                <th style="width:110px">Disc Amt</th>
+                                <th style="width:110px">Disc %</th>
+                                <th style="width:120px">Total</th>
+                                <th style="width:48px;text-align:center;">—</th>
+                            </tr>
+                            </thead>
+                            <tbody id="purchase-tbody"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="table-empty-state" class="text-center py-5 text-muted d-none">
+                        <i class="bi bi-cart d-block mb-2" style="font-size:2.5rem;opacity:.2;"></i>
+                        <p class="mb-1 fw-semibold">No Products Added</p>
+                        <p class="small mb-0">Click "Add Product" to begin</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: Invoice Summary -->
+            <div class="erp-card mb-3">
+                <div class="erp-card__header">
+                    <div class="erp-card__header-icon erp-card__header-icon--violet">
+                        <i class="bi bi-calculator"></i>
+                    </div>
+                    <div>
+                        <h5 class="erp-card__title mb-0">Invoice Summary</h5>
+                        <p class="erp-card__subtitle mb-0">Step 3 — Review totals and apply discounts</p>
+                    </div>
+                </div>
+                <div class="erp-card__body">
+
+                    <div class="summary-grid-erp mb-4">
+                        <div class="summary-item-erp">
+                            <span>Subtotal</span>
+                            <strong id="summary-subtotal">৳0.00</strong>
+                        </div>
+                        <div class="summary-item-erp">
+                            <span>Discount</span>
+                            <strong id="summary-discount" class="text-danger">-৳0.00</strong>
+                        </div>
+                        <div class="summary-item-erp summary-item-erp--total">
+                            <span>Grand Total</span>
+                            <strong id="summary-grand-total">৳0.00</strong>
+                        </div>
+                        <div class="summary-item-erp">
+                            <span>Advance Paid</span>
+                            <strong id="summary-advance-paid" class="text-success">৳0.00</strong>
+                        </div>
+                        <div class="summary-item-erp">
+                            <span>Paid</span>
+                            <strong id="summary-paid" class="text-success">৳0.00</strong>
+                        </div>
+                        <div class="summary-item-erp summary-item-erp--due">
+                            <span>Due</span>
+                            <strong id="summary-due" class="text-danger">৳0.00</strong>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:.8125rem;">Invoice Discount</label>
+                            <div class="input-group">
+                                <span class="input-group-text" style="font-size:.875rem;">৳</span>
+                                <input type="number" id="invoice-discount-input"
+                                       value="0.00" min="0" step="any"
+                                       class="form-control erp-input"
+                                       oninput="recalculateEntireVoucher()">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" style="font-size:.8125rem;">Advance Paid</label>
+                            <div class="input-group">
+                                <span class="input-group-text" style="font-size:.875rem;">৳</span>
+                                <input type="number" id="advance-paid-input"
+                                       name="advancePaid"
+                                       th:value="${purchase.advancePaid}"
+                                       min="0" step="0.01"
+                                       class="form-control erp-input"
+                                       oninput="recalculateEntireVoucher()">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- STEP 4: Payments -->
+            <div class="erp-card mb-4">
+                <div class="erp-card__header">
+                    <div class="erp-card__header-icon erp-card__header-icon--green">
+                        <i class="bi bi-credit-card"></i>
+                    </div>
+                    <div>
+                        <h5 class="erp-card__title mb-0">Payments</h5>
+                        <p class="erp-card__subtitle mb-0">Step 4 — Record payment methods</p>
+                    </div>
+                    <button type="button" class="btn btn-ghost-erp btn-sm ms-auto" onclick="addPaymentRow()">
+                        <i class="bi bi-plus-lg me-1"></i>Add Payment
+                    </button>
+                </div>
+                <div class="erp-card__body">
+                    <div id="payment-matrix-container"></div>
+                    <div id="payment-empty" class="text-center py-3 text-muted" style="font-size:.875rem;">
+                        No payments added yet
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="d-flex gap-2 justify-content-end pb-4">
+                <a th:href="@{/inventory/purchase/{id}(id=${purchase.id})}" class="btn btn-ghost-erp">
+                    <i class="bi bi-x-lg me-2"></i>Cancel
+                </a>
+                <button type="button" class="btn btn-warning-erp" onclick="submitPurchaseForm('DRAFT')">
+                    <i class="bi bi-save me-2"></i>Save as Draft
+                </button>
+                <button type="button" class="btn btn-primary-erp" onclick="submitPurchaseForm('COMPLETED')">
+                    <i class="bi bi-check-lg me-2"></i>Post Purchase
+                </button>
+            </div>
+
+        </form>
+
+    </main>
+</div>
+
+<!-- ── CATEGORY MODAL ────────────────────────────────────────── -->
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content erp-modal">
+            <div class="modal-header border-0 pb-0">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="modal-icon-wrap">
+                        <i class="bi bi-tags"></i>
+                    </div>
+                    <h5 class="modal-title mb-0">Add Category</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <label class="form-label fw-semibold" style="font-size:.8125rem;">Category Name</label>
+                <input type="text" id="modal-category-name" class="form-control erp-input" placeholder="Category name">
+            </div>
+            <div class="modal-footer border-0 pt-0 gap-2">
+                <button type="button" class="btn btn-ghost-erp" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary-erp" onclick="saveCategoryModal()">
+                    <i class="bi bi-check-lg me-1"></i>Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── PRODUCT MODAL ─────────────────────────────────────────── -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content erp-modal">
+            <div class="modal-header border-0 pb-0">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="modal-icon-wrap erp-card__header-icon--green">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <h5 class="modal-title mb-0">Add Product</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-3 d-flex flex-column gap-3">
+                <div>
+                    <label class="form-label fw-semibold" style="font-size:.8125rem;">Product Name</label>
+                    <input type="text" id="modal-product-name" class="form-control erp-input" placeholder="Product name">
+                </div>
+                <div>
+                    <label class="form-label fw-semibold" style="font-size:.8125rem;">Category</label>
+                    <select id="modal-product-category" class="form-select erp-select">
+                        <option value="">— Select Category —</option>
+                        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0 gap-2">
+                <button type="button" class="btn btn-ghost-erp" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary-erp" onclick="saveProductModal()">
+                    <i class="bi bi-check-lg me-1"></i>Save Product
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const initialCategories = /*[[${categories}]]*/ [];
+    const initialProducts   = /*[[${products}]]*/ [];
+    const existingItems     = /*[[${purchase.items}]]*/ [];
+    const existingPayments  = /*[[${purchase.payments}]]*/ [];
+    /*]]>*/
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/dashboard.js}"></script>
+<script th:src="@{/js/add_purchase.js}"></script>
+
+<!-- Pre-fill existing rows after page load -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const tbody = document.getElementById('purchase-tbody');
+        if (tbody) tbody.innerHTML = '';
+
+        const payContainer = document.getElementById('payment-matrix-container');
+        if (payContainer) payContainer.innerHTML = '';
+
+        purchaseItemCount = 0;
+        paymentRowCount   = 0;
+
+        if (existingItems && existingItems.length > 0) {
+            existingItems.forEach(item => {
+                addPurchaseRow();
+                const idx = purchaseItemCount - 1;
+
+                const catSel = document.getElementById(`cat-select-${idx}`);
+                if (catSel && item.categoryId) {
+                    catSel.value = item.categoryId;
+                    onRowCategoryChange(idx);
+                }
+
+                const prodSel = document.getElementById(`prod-select-${idx}`);
+                if (prodSel && item.productId) {
+                    prodSel.value = item.productId;
+                    onRowProductChange(idx);
+                }
+
+                setTimeout(() => {
+                    const qtyEl   = document.getElementById(`qty-input-${idx}`);
+                    const priceEl = document.getElementById(`price-input-${idx}`);
+                    const discAmt = document.getElementById(`disc-amt-input-${idx}`);
+                    const discPct = document.getElementById(`disc-pct-input-${idx}`);
+
+                    if (qtyEl)   qtyEl.value   = item.purchaseQty        || 1;
+                    if (priceEl) priceEl.value = item.unitPrice           || 0;
+                    if (discAmt) discAmt.value = item.discountAmount      || 0;
+                    if (discPct) discPct.value = item.discountPercentage  || 0;
+
+                    calculateRowTotal(idx);
+                }, 100);
+            });
+        } else {
+            addPurchaseRow();
+        }
+
+        if (existingPayments && existingPayments.length > 0) {
+            existingPayments.forEach(pay => {
+                addPaymentRow();
+                const idx = paymentRowCount - 1;
+
+                setTimeout(() => {
+                    const methodSel = document.querySelector(`[name="payments[${idx}].paymentMethod"]`);
+                    const amountEl  = document.querySelector(`[name="payments[${idx}].amount"]`);
+                    const dateEl    = document.querySelector(`[name="payments[${idx}].paymentDate"]`);
+                    const refEl     = document.querySelector(`[name="payments[${idx}].referenceNo"]`);
+
+                    if (methodSel) methodSel.value = pay.paymentMethod || 'CASH';
+                    if (amountEl)  amountEl.value  = pay.amount        || 0;
+                    if (dateEl)    dateEl.value     = pay.paymentDate   || '';
+                    if (refEl)     refEl.value      = pay.referenceNo   || '';
+
+                    recalculateEntireVoucher();
+                }, 150);
+            });
+        } else {
+            addPaymentRow();
+        }
+
+        const supSel = document.getElementById('supplier-select');
+        if (supSel && supSel.value) {
+            supSel.dispatchEvent(new Event('change'));
+        }
+    });
+</script>
+
+</body>
+</html>
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en"-->
+<!--      xmlns:th="http://www.thymeleaf.org"-->
+<!--      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"-->
+<!--      layout:decorate="~{layout/main}">-->
+
+<!--<head>-->
+<!--    <meta charset="UTF-8"/>-->
+<!--    <title>Edit Purchase</title>-->
+<!--    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>-->
+<!--    <link rel="stylesheet" th:href="@{/css/purchase-new.css}">-->
+<!--</head>-->
+
+<!--<body>-->
+<!--<div class="purchase-page">-->
+
+<!--    &lt;!&ndash; ══ HEADER ══ &ndash;&gt;-->
+<!--    <div class="page-header">-->
+<!--        <div>-->
+<!--            <a th:href="@{/inventory/purchase/{id}(id=${purchase.id})}" class="back-link">← Back to View</a>-->
+<!--            <h2 class="page-title">Edit Purchase — <span th:text="${purchase.purchaseNumber}">INV-001</span></h2>-->
+<!--            <p class="page-subtitle">Modify purchase invoice details</p>-->
+<!--        </div>-->
+<!--        <span class="status-pill" th:classappend="${purchase.status.name()}" th:text="${purchase.status}">DRAFT</span>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; ══ FLASH ══ &ndash;&gt;-->
+<!--    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>-->
+
+<!--    &lt;!&ndash; ══ FORM ══ &ndash;&gt;-->
+<!--    <form id="purchase-form"-->
+<!--          th:action="@{/inventory/purchase/{id}/update(id=${purchase.id})}"-->
+<!--          method="post">-->
+
+<!--        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
+<!--        <input type="hidden" id="purchase-status" name="status" th:value="${purchase.status}"/>-->
+<!--        <input type="hidden" name="businessId"      th:value="${businessId}"/>-->
+<!--        <input type="hidden" name="purchaseDate"    th:value="${purchase.purchaseDate}"/>-->
+<!--        <input type="hidden" id="invoice-discount-hidden" name="invoiceDiscount" value="0"/>-->
+
+<!--        &lt;!&ndash; SUPPLIER + CATEGORY &ndash;&gt;-->
+<!--        <div class="card">-->
+<!--            <div class="card-header"><h3 data-step="1">Supplier &amp; Category</h3></div>-->
+<!--            <div class="card-body">-->
+<!--                <div class="grid-2">-->
+
+<!--                    <div class="form-group">-->
+<!--                        <label class="form-label">Supplier</label>-->
+<!--                        <select name="supplierId" id="supplier-select" class="form-control">-->
+<!--                            <option value="">— Select Supplier —</option>-->
+<!--                            <option th:each="sup : ${suppliers}"-->
+<!--                                    th:value="${sup.id}"-->
+<!--                                    th:text="${sup.name}"-->
+<!--                                    th:data-company="${sup.company}"-->
+<!--                                    th:data-phone="${sup.phone}"-->
+<!--                                    th:data-address="${sup.address}"-->
+<!--                                    th:selected="${sup.id == purchase.supplierId}">-->
+<!--                            </option>-->
+<!--                        </select>-->
+<!--                        <div class="supplier-info-box hidden" id="supplier-card">-->
+<!--                            <div class="supplier-company"><strong id="sup-company">N/A</strong></div>-->
+<!--                            <div class="supplier-meta">Phone: <span id="sup-phone">N/A</span></div>-->
+<!--                            <div class="supplier-meta">Address: <span id="sup-address">N/A</span></div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+<!--                    <div class="form-group">-->
+<!--                        <label class="form-label">Category Filter</label>-->
+<!--                        <select id="category-select" class="form-control">-->
+<!--                            <option value="">— All Categories —</option>-->
+<!--                            <option th:each="cat : ${categories}"-->
+<!--                                    th:value="${cat.id}"-->
+<!--                                    th:text="${cat.name}"-->
+<!--                                    th:data-code="${cat.id}"-->
+<!--                                    th:data-description="${cat.description}">-->
+<!--                            </option>-->
+<!--                        </select>-->
+<!--                    </div>-->
+
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; PURCHASE ITEMS TABLE &ndash;&gt;-->
+<!--        <div class="card">-->
+<!--            <div class="card-header">-->
+<!--                <div class="flex-between">-->
+<!--                    <h3 data-step="2">Purchase Items</h3>-->
+<!--                    <button type="button" class="btn btn-primary" onclick="addPurchaseRow()">+ Add Product</button>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="card-body" style="padding:0;">-->
+<!--                <div class="table-responsive">-->
+<!--                    <table class="purchase-table">-->
+<!--                        <thead>-->
+<!--                        <tr>-->
+<!--                            <th width="160">Category</th>-->
+<!--                            <th width="210">Product</th>-->
+<!--                            <th width="110">Stock / Last</th>-->
+<!--                            <th width="90">Qty</th>-->
+<!--                            <th width="110">Price</th>-->
+<!--                            <th width="110">Disc Amt</th>-->
+<!--                            <th width="100">Disc %</th>-->
+<!--                            <th width="120">Total</th>-->
+<!--                            <th width="48">✕</th>-->
+<!--                        </tr>-->
+<!--                        </thead>-->
+<!--                        <tbody id="purchase-tbody"></tbody>-->
+<!--                    </table>-->
+<!--                </div>-->
+<!--                <div id="table-empty-state" class="py-12 flex flex-col items-center justify-center text-center hidden">-->
+<!--                    <h4>No Products Added</h4>-->
+<!--                    <p>Click "Add Product" to begin</p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; SUMMARY &ndash;&gt;-->
+<!--        <div class="card">-->
+<!--            <div class="card-header"><h3 data-step="3">Invoice Summary</h3></div>-->
+<!--            <div class="card-body">-->
+<!--                <div class="summary-grid">-->
+<!--                    <div class="summary-box">-->
+<!--                        <span>Subtotal</span>-->
+<!--                        <strong id="summary-subtotal">৳0.00</strong>-->
+<!--                    </div>-->
+
+<!--                    <div class="summary-box">-->
+<!--                        <span>Discount</span>-->
+<!--                        <strong id="summary-discount">-৳0.00</strong>-->
+<!--                    </div>-->
+
+<!--                    <div class="summary-box">-->
+<!--                        <span>Grand Total</span>-->
+<!--                        <strong id="summary-grand-total">৳0.00</strong>-->
+<!--                    </div>-->
+
+<!--                    <div class="summary-box">-->
+<!--                        <span>Advance Paid</span>-->
+<!--                        <strong id="summary-advance-paid">৳0.00</strong>-->
+<!--                    </div>-->
+
+<!--                    <div class="summary-box">-->
+<!--                        <span>Paid</span>-->
+<!--                        <strong id="summary-paid">৳0.00</strong>-->
+<!--                    </div>-->
+
+<!--                    <div class="summary-box">-->
+<!--                        <span>Due</span>-->
+<!--                        <strong id="summary-due">৳0.00</strong>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="form-group mt-4" style="max-width:220px;">-->
+<!--                    <label class="form-label">Invoice Discount</label>-->
+<!--                    <input type="number" id="invoice-discount-input" value="0.00" min="0" step="any"-->
+<!--                           class="form-control" oninput="recalculateEntireVoucher()">-->
+<!--                </div>-->
+
+<!--                <div class="form-group mt-4" style="max-width:220px;">-->
+<!--                    <label class="form-label">Advance Paid</label>-->
+
+<!--                    <input type="number"-->
+<!--                           id="advance-paid-input"-->
+<!--                           name="advancePaid"-->
+<!--                           th:value="${purchase.advancePaid}"-->
+<!--                           min="0"-->
+<!--                           step="0.01"-->
+<!--                           class="form-control"-->
+<!--                           oninput="recalculateEntireVoucher()">-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; PAYMENTS &ndash;&gt;-->
+<!--        <div class="card">-->
+<!--            <div class="card-header">-->
+<!--                <div class="flex-between">-->
+<!--                    <h3 data-step="4">Payments</h3>-->
+<!--                    <button type="button" class="btn btn-primary" onclick="addPaymentRow()">+ Add Payment</button>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="card-body">-->
+<!--                <div id="payment-matrix-container"></div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; ACTIONS &ndash;&gt;-->
+<!--        <div class="action-btns">-->
+<!--            <a th:href="@{/inventory/purchase/{id}(id=${purchase.id})}" class="btn btn-secondary">Cancel</a>-->
+<!--            <button type="button" class="btn btn-warning" onclick="submitPurchaseForm('DRAFT')">Save as Draft</button>-->
+<!--            <button type="button" class="btn btn-success" onclick="submitPurchaseForm('COMPLETED')">Post Purchase</button>-->
+<!--        </div>-->
+
+<!--    </form>-->
+
+<!--</div>-->
+
+<!--&lt;!&ndash; MODALS — same as form.html &ndash;&gt;-->
+<!--<div id="category-modal" class="hidden modal-overlay opacity-0 transition-all duration-300">-->
+<!--    <div class="modal-box scale-95 transition-all duration-300">-->
+<!--        <div class="modal-header">-->
+<!--            <h3>Add Category</h3>-->
+<!--            <button type="button" onclick="closeCategoryModal()">✕</button>-->
+<!--        </div>-->
+<!--        <div class="modal-body">-->
+<!--            <div class="form-group">-->
+<!--                <label class="form-label">Category Name</label>-->
+<!--                <input type="text" id="modal-category-name" class="form-control" placeholder="Category Name">-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="modal-footer">-->
+<!--            <button type="button" class="btn btn-primary" onclick="saveCategoryModal()">Save Category</button>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
+
+
+<!--<div id="product-modal" class="hidden modal-overlay opacity-0 transition-all duration-300">-->
+<!--    <div class="modal-box scale-95 transition-all duration-300">-->
+<!--        <div class="modal-header">-->
+<!--            <h3>Add Product</h3>-->
+<!--            <button type="button" onclick="closeProductModal()">✕</button>-->
+<!--        </div>-->
+<!--        <div class="modal-body">-->
+<!--            <div class="form-group">-->
+<!--                <label class="form-label">Product Name</label>-->
+<!--                <input type="text" id="modal-product-name" class="form-control">-->
+<!--            </div>-->
+<!--            <div class="form-group">-->
+<!--                <label class="form-label">Category</label>-->
+<!--                <select id="modal-product-category" class="form-control">-->
+<!--                    <option value="">— Select Category —</option>-->
+<!--                    <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>-->
+<!--                </select>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--        <div class="modal-footer">-->
+<!--            <button type="button" class="btn btn-primary" onclick="saveProductModal()">Save Product</button>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; EXISTING DATA → JS &ndash;&gt;-->
+<!--<script th:inline="javascript">-->
+<!--    /*<![CDATA[*/-->
+<!--    const initialCategories = /*[[${categories}]]*/ [];-->
+<!--    const initialProducts   = /*[[${products}]]*/ [];-->
+
+<!--    // Pre-load existing items from purchase-->
+<!--    const existingItems = /*[[${purchase.items}]]*/ [];-->
+
+<!--    // Pre-load existing payments-->
+<!--    const existingPayments = /*[[${purchase.payments}]]*/ [];-->
+<!--    /*]]>*/-->
+<!--</script>-->
+
+<!--<script th:src="@{/js/add_purchase.js}"></script>-->
+
+<!--&lt;!&ndash; Pre-fill existing rows after page load &ndash;&gt;-->
+<!--<script>-->
+<!--document.addEventListener('DOMContentLoaded', () => {-->
+
+<!--    // Remove default empty row added by add_purchase.js-->
+<!--    const tbody = document.getElementById('purchase-tbody');-->
+<!--    if (tbody) tbody.innerHTML = '';-->
+
+<!--    // Remove default payment row-->
+<!--    const payContainer = document.getElementById('payment-matrix-container');-->
+<!--    if (payContainer) payContainer.innerHTML = '';-->
+
+<!--    // Reset counters-->
+<!--    purchaseItemCount = 0;-->
+<!--    paymentRowCount   = 0;-->
+
+<!--    // Pre-fill items-->
+<!--    if (existingItems && existingItems.length > 0) {-->
+<!--        existingItems.forEach(item => {-->
+<!--            addPurchaseRow();-->
+<!--            const idx = purchaseItemCount - 1;-->
+
+<!--            // Set category-->
+<!--            const catSel = document.getElementById(`cat-select-${idx}`);-->
+<!--            if (catSel && item.categoryId) {-->
+<!--                catSel.value = item.categoryId;-->
+<!--                onRowCategoryChange(idx);-->
+<!--            }-->
+
+<!--            // Set product-->
+<!--            const prodSel = document.getElementById(`prod-select-${idx}`);-->
+<!--            if (prodSel && item.productId) {-->
+<!--                prodSel.value = item.productId;-->
+<!--                onRowProductChange(idx);-->
+<!--            }-->
+
+<!--            // Set values-->
+<!--            setTimeout(() => {-->
+<!--                const qtyEl   = document.getElementById(`qty-input-${idx}`);-->
+<!--                const priceEl = document.getElementById(`price-input-${idx}`);-->
+<!--                const discAmt = document.getElementById(`disc-amt-input-${idx}`);-->
+<!--                const discPct = document.getElementById(`disc-pct-input-${idx}`);-->
+
+<!--                if (qtyEl)   qtyEl.value   = item.purchaseQty   || 1;-->
+<!--                if (priceEl) priceEl.value = item.unitPrice      || 0;-->
+<!--                if (discAmt) discAmt.value = item.discountAmount || 0;-->
+<!--                if (discPct) discPct.value = item.discountPercentage || 0;-->
+
+<!--                calculateRowTotal(idx);-->
+<!--            }, 100);-->
+<!--        });-->
+<!--    } else {-->
+<!--        addPurchaseRow();-->
+<!--    }-->
+
+<!--    // Pre-fill payments-->
+<!--    if (existingPayments && existingPayments.length > 0) {-->
+<!--        existingPayments.forEach(pay => {-->
+<!--            addPaymentRow();-->
+<!--            const idx = paymentRowCount - 1;-->
+
+<!--            setTimeout(() => {-->
+<!--                const methodSel = document.querySelector(`[name="payments[${idx}].paymentMethod"]`);-->
+<!--                const amountEl  = document.querySelector(`[name="payments[${idx}].amount"]`);-->
+<!--                const dateEl    = document.querySelector(`[name="payments[${idx}].paymentDate"]`);-->
+<!--                const refEl     = document.querySelector(`[name="payments[${idx}].referenceNo"]`);-->
+
+<!--                if (methodSel) methodSel.value = pay.paymentMethod || 'CASH';-->
+<!--                if (amountEl)  amountEl.value  = pay.amount        || 0;-->
+<!--                if (dateEl)    dateEl.value     = pay.paymentDate   || '';-->
+<!--                if (refEl)     refEl.value      = pay.referenceNo   || '';-->
+
+<!--                recalculateEntireVoucher();-->
+<!--            }, 150);-->
+<!--        });-->
+<!--    } else {-->
+<!--        addPaymentRow();-->
+<!--    }-->
+
+<!--    // Show supplier card if supplier selected-->
+<!--    const supSel = document.getElementById('supplier-select');-->
+<!--    if (supSel && supSel.value) {-->
+<!--        supSel.dispatchEvent(new Event('change'));-->
+<!--    }-->
+<!--});-->
+<!--</script>-->
+
+<!--</body>-->
+<!--</html>-->

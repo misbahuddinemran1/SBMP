@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Purchase Dashboard – eLoan SaaS</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/purchase.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="erp-body">
+
+<!-- Sidebar -->
+<div th:replace="~{dashboard/fragments/sidebar :: sidebar}"></div>
+
+<!-- Main Wrapper -->
+<div class="erp-main" id="erpMain">
+
+    <!-- Topbar -->
+    <div th:replace="~{dashboard/fragments/topbar :: topbar}"></div>
+
+    <!-- Page Content -->
+    <main class="erp-content">
+
+        <!-- ── PAGE HEADER ──────────────────────────────────── -->
+        <div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb breadcrumb-erp mb-1">
+                        <li class="breadcrumb-item"><a th:href="@{/dashboard}"><i class="bi bi-house-door"></i> Dashboard</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/inventory}">Inventory</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Purchase Dashboard</li>
+                    </ol>
+                </nav>
+                <h1 class="page-title mb-0">Purchase Dashboard</h1>
+                <p class="page-subtitle mb-0">Real-time business overview</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a th:href="@{/inventory/purchase/list}" class="btn btn-ghost-erp">
+                    <i class="bi bi-list-ul me-2"></i>All Invoices
+                </a>
+                <a th:href="@{/inventory/purchase/new}" class="btn btn-primary-erp">
+                    <i class="bi bi-plus-lg me-2"></i>New Purchase
+                </a>
+            </div>
+        </div>
+
+        <!-- ── THIS MONTH vs LAST MONTH ──────────────────────── -->
+        <div class="erp-card mb-4">
+            <div class="erp-card__body py-3">
+                <div class="d-flex align-items-center gap-4 flex-wrap">
+
+                    <div class="month-block">
+                        <span class="month-block__label">This Month</span>
+                        <strong class="month-block__value">
+                            ৳<span th:text="${#numbers.formatDecimal(thisMonthTotal,1,2)}">0.00</span>
+                        </strong>
+                    </div>
+
+                    <div class="month-vs">vs</div>
+
+                    <div class="month-block">
+                        <span class="month-block__label">Last Month</span>
+                        <strong class="month-block__value month-block__value--muted">
+                            ৳<span th:text="${#numbers.formatDecimal(lastMonthTotal,1,2)}">0.00</span>
+                        </strong>
+                    </div>
+
+                    <div id="month-trend-badge" class="ms-2"></div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ── KPI CARDS ─────────────────────────────────────── -->
+        <div class="row g-3 mb-4">
+
+            <div class="col-6 col-lg-4">
+                <div class="kpi-stat-card h-100">
+                    <div class="kpi-stat-icon kpi-stat-icon--blue">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <div class="kpi-stat-body">
+                        <span>Total Purchase</span>
+                        <strong>৳<span th:text="${#numbers.formatDecimal(totalPurchase,1,2)}">0.00</span></strong>
+                        <small th:text="${totalInvoices} + ' Invoices'">0 Invoices</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-4">
+                <div class="kpi-stat-card h-100">
+                    <div class="kpi-stat-icon kpi-stat-icon--green">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="kpi-stat-body">
+                        <span>Total Paid</span>
+                        <strong>৳<span th:text="${#numbers.formatDecimal(totalPaid,1,2)}">0.00</span></strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-4">
+                <div class="kpi-stat-card h-100">
+                    <div class="kpi-stat-icon kpi-stat-icon--red">
+                        <i class="bi bi-exclamation-circle"></i>
+                    </div>
+                    <div class="kpi-stat-body">
+                        <span>Total Due</span>
+                        <strong>৳<span th:text="${#numbers.formatDecimal(totalDue,1,2)}">0.00</span></strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-4">
+                <div class="kpi-stat-card h-100">
+                    <div class="kpi-stat-icon kpi-stat-icon--amber">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <div class="kpi-stat-body">
+                        <span>Suppliers</span>
+                        <strong th:text="${totalSuppliers}">0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-4">
+                <div class="kpi-stat-card h-100">
+                    <div class="kpi-stat-icon kpi-stat-icon--violet">
+                        <i class="bi bi-boxes"></i>
+                    </div>
+                    <div class="kpi-stat-body">
+                        <span>Products</span>
+                        <strong th:text="${totalProducts}">0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-4">
+                <div class="kpi-stat-card h-100">
+                    <div class="kpi-stat-icon kpi-stat-icon--teal">
+                        <i class="bi bi-tags"></i>
+                    </div>
+                    <div class="kpi-stat-body">
+                        <span>Categories</span>
+                        <strong th:text="${totalCategories}">0</strong>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── CHARTS ROW 1: TREND + DONUT ───────────────────── -->
+        <div class="row g-3 mb-3">
+
+            <div class="col-lg-7">
+                <div class="erp-card h-100">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon"><i class="bi bi-graph-up"></i></div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Monthly Purchase Trend</h5>
+                            <p class="erp-card__subtitle mb-0">Last 6 months</p>
+                        </div>
+                    </div>
+                    <div class="erp-card__body">
+                        <canvas id="trendChart" height="110"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="erp-card h-100">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon erp-card__header-icon--violet"><i class="bi bi-pie-chart"></i></div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Payment Methods</h5>
+                            <p class="erp-card__subtitle mb-0">By amount</p>
+                        </div>
+                    </div>
+                    <div class="erp-card__body d-flex align-items-center gap-4 flex-wrap">
+                        <canvas id="donutChart" style="max-width:160px;max-height:160px;"></canvas>
+                        <div id="donut-legend" class="donut-legend-erp"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── CHARTS ROW 2: TOP SUPPLIERS + TOP PRODUCTS ────── -->
+        <div class="row g-3 mb-4">
+
+            <div class="col-lg-6">
+                <div class="erp-card h-100">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon erp-card__header-icon--amber"><i class="bi bi-person-lines-fill"></i></div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Top 5 Suppliers</h5>
+                            <p class="erp-card__subtitle mb-0">By purchase total</p>
+                        </div>
+                    </div>
+                    <div class="erp-card__body">
+                        <canvas id="supplierChart" height="130"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="erp-card h-100">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon erp-card__header-icon--green"><i class="bi bi-box-seam"></i></div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Top 5 Products</h5>
+                            <p class="erp-card__subtitle mb-0">By quantity purchased</p>
+                        </div>
+                    </div>
+                    <div class="erp-card__body">
+                        <canvas id="productChart" height="130"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── BOTTOM: RECENT PURCHASES + SIDE PANELS ───────── -->
+        <div class="row g-3">
+
+            <!-- Recent Purchases Table -->
+            <div class="col-lg-8">
+                <div class="erp-card">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon"><i class="bi bi-clock-history"></i></div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Recent Purchases</h5>
+                        </div>
+                        <a th:href="@{/inventory/purchase/list}" class="btn btn-ghost-erp btn-sm ms-auto">
+                            View All <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                    <div class="erp-card__body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 erp-table">
+                                <thead>
+                                <tr>
+                                    <th>Invoice</th>
+                                    <th>Supplier</th>
+                                    <th>Date</th>
+                                    <th>Total</th>
+                                    <th>Due</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="p : ${recentPurchases}" class="t-row">
+                                    <td>
+                                        <a th:href="@{/inventory/purchase/{id}(id=${p.id})}"
+                                           class="fw-semibold text-primary text-decoration-none"
+                                           style="font-size:.875rem;"
+                                           th:text="${p.purchaseNumber}">INV-001</a>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="supplier-avatar-sm"
+                                                 th:text="${#strings.substring(p.supplier.supplierName,0,1).toUpperCase()}">S</div>
+                                            <span style="font-size:.875rem;" th:text="${p.supplier.supplierName}">Supplier</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-muted" style="font-size:.8125rem;"
+                                        th:text="${#temporals.format(p.purchaseDate,'dd MMM yy')}">01 Jan 25</td>
+                                    <td class="fw-semibold" style="font-size:.875rem;"
+                                        th:text="'৳' + ${#numbers.formatDecimal(p.grandTotal,1,2)}">৳0.00</td>
+                                    <td>
+                                        <span class="badge-due"
+                                              th:classappend="${p.dueAmount!=null and p.dueAmount.compareTo(T(java.math.BigDecimal).ZERO)>0} ? 'badge-due--red' : 'badge-due--ok'"
+                                              th:text="'৳' + ${#numbers.formatDecimal(p.dueAmount,1,2)}">৳0.00</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge-invoice-status"
+                                              th:classappend="${p.status.name()}"
+                                              th:text="${p.status}">DRAFT</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${recentPurchases==null or recentPurchases.isEmpty()}">
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox d-block mb-2" style="font-size:2rem;opacity:.3;"></i>
+                                        No purchases yet
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Draft + Low Stock -->
+            <div class="col-lg-4 d-flex flex-column gap-3">
+
+                <!-- Draft Invoices -->
+                <div class="erp-card">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon erp-card__header-icon--amber"><i class="bi bi-file-earmark-text"></i></div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Draft Invoices</h5>
+                            <p class="erp-card__subtitle mb-0"
+                               th:text="${draftInvoices!=null?draftInvoices.size():0} + ' pending'">0 pending</p>
+                        </div>
+                    </div>
+                    <div class="erp-card__body p-0">
+                        <div th:each="d : ${draftInvoices}" class="side-list-row">
+                            <div>
+                                <div class="side-list-name" th:text="${d.purchaseNumber}">INV-001</div>
+                                <div class="side-list-sub"  th:text="${d.supplier.supplierName}">Supplier</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="side-list-amt" th:text="'৳' + ${#numbers.formatDecimal(d.grandTotal,1,2)}">৳0.00</div>
+                                <a th:href="@{/inventory/purchase/{id}/edit(id=${d.id})}" class="side-list-link">Edit →</a>
+                            </div>
+                        </div>
+                        <div th:if="${draftInvoices==null or draftInvoices.isEmpty()}"
+                             class="text-center py-4 text-muted" style="font-size:.875rem;">
+                            No draft invoices
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Low Stock -->
+                <div class="erp-card">
+                    <div class="erp-card__header">
+                        <div class="erp-card__header-icon erp-card__header-icon--red"><i class="bi bi-exclamation-triangle"></i></div>
+                        <div>
+                            <h5 class="erp-card__title mb-0">Low Stock Alert</h5>
+                            <p class="erp-card__subtitle mb-0"
+                               th:text="${lowStockProducts!=null?lowStockProducts.size():0} + ' items'">0 items</p>
+                        </div>
+                    </div>
+                    <div class="erp-card__body p-0">
+                        <div th:each="prod : ${lowStockProducts}" class="side-list-row">
+                            <div>
+                                <div class="side-list-name" th:text="${prod.name}">Product</div>
+                                <div class="side-list-sub"
+                                     th:text="${prod.category!=null?prod.category.name:'—'}">Category</div>
+                            </div>
+                            <span class="badge-stock-qty"
+                                  th:classappend="${prod.stockQuantity!=null and prod.stockQuantity<=0} ? 'badge-stock-qty--zero' : 'badge-stock-qty--low'"
+                                  th:text="${prod.stockQuantity!=null?prod.stockQuantity:0} + ' left'">0 left</span>
+                        </div>
+                        <div th:if="${lowStockProducts==null or lowStockProducts.isEmpty()}"
+                             class="text-center py-4" style="font-size:.875rem;color:#059669;">
+                            <i class="bi bi-check-circle me-1"></i>All stocks healthy!
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div><!-- /.row -->
+
+    </main>
+</div>
+
+<!-- Chart Data -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const TREND_LABELS = /*[[${trendLabels}]]*/ [];
+    const TREND_VALUES = /*[[${trendValues}]]*/ [];
+    const PAY_LABELS   = /*[[${payLabels}]]*/ [];
+    const PAY_VALUES   = /*[[${payValues}]]*/ [];
+    const SUP_LABELS   = /*[[${supLabels}]]*/ [];
+    const SUP_VALUES   = /*[[${supValues}]]*/ [];
+    const PROD_LABELS  = /*[[${prodLabels}]]*/ [];
+    const PROD_VALUES  = /*[[${prodValues}]]*/ [];
+    const THIS_MONTH   = /*[[${thisMonthTotal}]]*/ 0;
+    const LAST_MONTH   = /*[[${lastMonthTotal}]]*/ 0;
+    /*]]>*/
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/dashboard.js}"></script>
+<script th:src="@{/js/dashboard-charts.js}"></script>
+</body>
+</html>
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en"-->
+<!--      xmlns:th="http://www.thymeleaf.org"-->
+<!--      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"-->
+<!--      layout:decorate="~{layout/main}">-->
+
+<!--<head>-->
+<!--    <meta charset="UTF-8"/>-->
+<!--    <title>Purchase Dashboard</title>-->
+<!--    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>-->
+<!--    <link rel="stylesheet" th:href="@{/css/dashboard-charts.css}">-->
+<!--    <link rel="stylesheet"-->
+<!--          th:href="@{/css/dashboard.css}">-->
+<!--    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>-->
+<!--</head>-->
+
+<!--<body>-->
+<!--<div class="dash-page">-->
+
+
+
+<!--    &lt;!&ndash; ══ HEADER ══ &ndash;&gt;-->
+<!--    <div class="dash-header">-->
+<!--        <div>-->
+<!--            <div class="dash-badge">Inventory · Overview</div>-->
+<!--            <h2 class="dash-title">Purchase Dashboard</h2>-->
+<!--            <p class="dash-sub">Real-time business overview</p>-->
+<!--        </div>-->
+<!--        <div class="header-actions">-->
+<!--            <a th:href="@{/inventory/purchase/list}" class="btn btn-secondary">View All Invoices</a>-->
+<!--            <a th:href="@{/inventory/purchase/new}"  class="btn btn-primary">+ New Purchase</a>-->
+<!--        </div>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; ══ THIS MONTH vs LAST MONTH ══ &ndash;&gt;-->
+<!--    <div class="month-compare">-->
+<!--        <div class="month-card month-this">-->
+<!--            <span>This Month</span>-->
+<!--            <strong>৳<span th:text="${#numbers.formatDecimal(thisMonthTotal, 1, 2)}">0.00</span></strong>-->
+<!--        </div>-->
+<!--        <div class="month-divider">vs</div>-->
+<!--        <div class="month-card month-last">-->
+<!--            <span>Last Month</span>-->
+<!--            <strong>৳<span th:text="${#numbers.formatDecimal(lastMonthTotal, 1, 2)}">0.00</span></strong>-->
+<!--        </div>-->
+<!--        <div class="month-trend" id="month-trend-badge">—</div>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; ══ KPI CARDS ══ &ndash;&gt;-->
+<!--    <div class="kpi-grid">-->
+
+<!--        <div class="kpi-card kpi-purchase">-->
+<!--            <div class="kpi-icon">-->
+<!--                <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M3 5h14M3 10h14M3 15h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>-->
+<!--            </div>-->
+<!--            <div class="kpi-body">-->
+<!--                <span>Total Purchase</span>-->
+<!--                <strong>৳<span th:text="${#numbers.formatDecimal(totalPurchase, 1, 2)}">0.00</span></strong>-->
+<!--            </div>-->
+<!--            <div class="kpi-foot" th:text="${totalInvoices} + ' Invoices'">0 Invoices</div>-->
+<!--        </div>-->
+
+<!--        <div class="kpi-card kpi-paid">-->
+<!--            <div class="kpi-icon">-->
+<!--                <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.6"/><path d="M7 10.5l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>-->
+<!--            </div>-->
+<!--            <div class="kpi-body">-->
+<!--                <span>Total Paid</span>-->
+<!--                <strong>৳<span th:text="${#numbers.formatDecimal(totalPaid, 1, 2)}">0.00</span></strong>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        <div class="kpi-card kpi-due">-->
+<!--            <div class="kpi-icon">-->
+<!--                <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.6"/><path d="M10 7v4M10 13h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>-->
+<!--            </div>-->
+<!--            <div class="kpi-body">-->
+<!--                <span>Total Due</span>-->
+<!--                <strong>৳<span th:text="${#numbers.formatDecimal(totalDue, 1, 2)}">0.00</span></strong>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        <div class="kpi-card">-->
+<!--            <div class="kpi-icon">-->
+<!--                <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M4 16V8l6-4 6 4v8" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><rect x="8" y="11" width="4" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/></svg>-->
+<!--            </div>-->
+<!--            <div class="kpi-body">-->
+<!--                <span>Suppliers</span>-->
+<!--                <strong th:text="${totalSuppliers}">0</strong>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        <div class="kpi-card">-->
+<!--            <div class="kpi-icon">-->
+<!--                <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><rect x="3" y="3" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="11" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>-->
+<!--            </div>-->
+<!--            <div class="kpi-body">-->
+<!--                <span>Products</span>-->
+<!--                <strong th:text="${totalProducts}">0</strong>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        <div class="kpi-card">-->
+<!--            <div class="kpi-icon">-->
+<!--                <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M4 6h12M4 10h8M4 14h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>-->
+<!--            </div>-->
+<!--            <div class="kpi-body">-->
+<!--                <span>Categories</span>-->
+<!--                <strong th:text="${totalCategories}">0</strong>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--    </div>-->
+
+<!--    &lt;!&ndash; ══ CHARTS ROW 1 — TREND + DONUT ══ &ndash;&gt;-->
+<!--    <div class="chart-row">-->
+
+<!--        &lt;!&ndash; Monthly Trend &ndash;&gt;-->
+<!--        <div class="card chart-card chart-wide">-->
+<!--            <div class="card-header">-->
+<!--                <h3>Monthly Purchase Trend</h3>-->
+<!--                <span class="card-sub">Last 6 months</span>-->
+<!--            </div>-->
+<!--            <div class="card-body">-->
+<!--                <canvas id="trendChart" height="100"></canvas>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Payment Donut &ndash;&gt;-->
+<!--        <div class="card chart-card chart-narrow">-->
+<!--            <div class="card-header">-->
+<!--                <h3>Payment Methods</h3>-->
+<!--                <span class="card-sub">By amount</span>-->
+<!--            </div>-->
+<!--            <div class="card-body donut-body">-->
+<!--                <canvas id="donutChart" height="160"></canvas>-->
+<!--                <div id="donut-legend" class="donut-legend"></div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--    </div>-->
+
+<!--    &lt;!&ndash; ══ CHARTS ROW 2 — TOP SUPPLIERS + TOP PRODUCTS ══ &ndash;&gt;-->
+<!--    <div class="chart-row">-->
+
+<!--        &lt;!&ndash; Top Suppliers &ndash;&gt;-->
+<!--        <div class="card chart-card">-->
+<!--            <div class="card-header">-->
+<!--                <h3>Top 5 Suppliers</h3>-->
+<!--                <span class="card-sub">By purchase total</span>-->
+<!--            </div>-->
+<!--            <div class="card-body">-->
+<!--                <canvas id="supplierChart" height="120"></canvas>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Top Products &ndash;&gt;-->
+<!--        <div class="card chart-card">-->
+<!--            <div class="card-header">-->
+<!--                <h3>Top 5 Products</h3>-->
+<!--                <span class="card-sub">By quantity purchased</span>-->
+<!--            </div>-->
+<!--            <div class="card-body">-->
+<!--                <canvas id="productChart" height="120"></canvas>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--    </div>-->
+
+<!--    &lt;!&ndash; ══ BOTTOM GRID ══ &ndash;&gt;-->
+<!--    <div class="bottom-grid">-->
+
+<!--        &lt;!&ndash; RECENT PURCHASES &ndash;&gt;-->
+<!--        <div class="card">-->
+<!--            <div class="card-header">-->
+<!--                <h3>Recent Purchases</h3>-->
+<!--                <a th:href="@{/inventory/purchase/list}" class="view-all">View All →</a>-->
+<!--            </div>-->
+<!--            <div class="table-responsive">-->
+<!--                <table class="dash-table">-->
+<!--                    <thead>-->
+<!--                    <tr>-->
+<!--                        <th>Invoice</th>-->
+<!--                        <th>Supplier</th>-->
+<!--                        <th>Date</th>-->
+<!--                        <th>Total</th>-->
+<!--                        <th>Due</th>-->
+<!--                        <th>Status</th>-->
+<!--                    </tr>-->
+<!--                    </thead>-->
+<!--                    <tbody>-->
+<!--                    <tr th:each="p : ${recentPurchases}" class="t-row">-->
+<!--                        <td>-->
+<!--                            <a th:href="@{/inventory/purchase/{id}(id=${p.id})}"-->
+<!--                               class="inv-link"-->
+<!--                               th:text="${p.purchaseNumber}">INV-001</a>-->
+<!--                        </td>-->
+<!--                        <td>-->
+<!--                            <div class="sup-cell">-->
+<!--                                <div class="sup-av" th:text="${#strings.substring(p.supplier.supplierName,0,1)}">S</div>-->
+<!--                                <span th:text="${p.supplier.supplierName}">Supplier</span>-->
+<!--                            </div>-->
+<!--                        </td>-->
+<!--                        <td class="muted" th:text="${#temporals.format(p.purchaseDate,'dd MMM yy')}">01 Jan 25</td>-->
+<!--                        <td class="money" th:text="'৳'+${#numbers.formatDecimal(p.grandTotal,1,2)}">৳0.00</td>-->
+<!--                        <td>-->
+<!--                            <span class="due-tag"-->
+<!--                                  th:classappend="${p.dueAmount!=null and p.dueAmount.compareTo(T(java.math.BigDecimal).ZERO)>0}?'red':''"-->
+<!--                                  th:text="'৳'+${#numbers.formatDecimal(p.dueAmount,1,2)}">৳0.00</span>-->
+<!--                        </td>-->
+<!--                        <td>-->
+<!--                            <span class="pill" th:classappend="${p.status.name()}" th:text="${p.status}">DRAFT</span>-->
+<!--                        </td>-->
+<!--                    </tr>-->
+<!--                    <tr th:if="${recentPurchases==null or recentPurchases.isEmpty()}">-->
+<!--                        <td colspan="6"><div class="empty-state"><p>No purchases yet</p></div></td>-->
+<!--                    </tr>-->
+<!--                    </tbody>-->
+<!--                </table>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; RIGHT COLUMN &ndash;&gt;-->
+<!--        <div class="right-col">-->
+
+<!--            &lt;!&ndash; DRAFT INVOICES &ndash;&gt;-->
+<!--            <div class="card">-->
+<!--                <div class="card-header">-->
+<!--                    <h3>Draft Invoices</h3>-->
+<!--                    <span class="draft-count"-->
+<!--                          th:text="${draftInvoices!=null?draftInvoices.size():0}+' pending'">0 pending</span>-->
+<!--                </div>-->
+<!--                <div class="small-list">-->
+<!--                    <div th:each="d : ${draftInvoices}" class="small-row">-->
+<!--                        <div>-->
+<!--                            <div class="small-name" th:text="${d.purchaseNumber}">INV-001</div>-->
+<!--                            <div class="small-sub"  th:text="${d.supplier.supplierName}">Supplier</div>-->
+<!--                        </div>-->
+<!--                        <div class="small-right">-->
+<!--                            <div class="small-amt" th:text="'৳'+${#numbers.formatDecimal(d.grandTotal,1,2)}">৳0.00</div>-->
+<!--                            <a th:href="@{/inventory/purchase/{id}/edit(id=${d.id})}" class="small-edit">Edit →</a>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div th:if="${draftInvoices==null or draftInvoices.isEmpty()}" class="empty-state">-->
+<!--                        <p>No draft invoices</p>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; LOW STOCK &ndash;&gt;-->
+<!--            <div class="card" style="margin-top:14px;">-->
+<!--                <div class="card-header">-->
+<!--                    <h3>Low Stock Alert</h3>-->
+<!--                    <span class="alert-count"-->
+<!--                          th:text="${lowStockProducts!=null?lowStockProducts.size():0}+' items'">0 items</span>-->
+<!--                </div>-->
+<!--                <div class="small-list">-->
+<!--                    <div th:each="prod : ${lowStockProducts}" class="small-row">-->
+<!--                        <div>-->
+<!--                            <div class="small-name" th:text="${prod.name}">Product</div>-->
+<!--                            <div class="small-sub"  th:text="${prod.category!=null?prod.category.name:'—'}">Category</div>-->
+<!--                        </div>-->
+<!--                        <div class="stock-qty"-->
+<!--                             th:classappend="${prod.stockQuantity!=null and prod.stockQuantity<=0}?'qty-zero':'qty-low'"-->
+<!--                             th:text="${prod.stockQuantity!=null?prod.stockQuantity:0}+' left'">0 left</div>-->
+<!--                    </div>-->
+<!--                    <div th:if="${lowStockProducts==null or lowStockProducts.isEmpty()}" class="empty-state">-->
+<!--                        <p style="color:#15803d;">All stocks healthy!</p>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--        </div>-->
+
+<!--    </div>-->
+
+<!--</div>-->
+
+<!--&lt;!&ndash; ══ CHART DATA (Thymeleaf → JS) ══ &ndash;&gt;-->
+<!--<script th:inline="javascript">-->
+<!--    /*<![CDATA[*/-->
+<!--    const TREND_LABELS  = /*[[${trendLabels}]]*/ [];-->
+<!--    const TREND_VALUES  = /*[[${trendValues}]]*/ [];-->
+<!--    const PAY_LABELS    = /*[[${payLabels}]]*/ [];-->
+<!--    const PAY_VALUES    = /*[[${payValues}]]*/ [];-->
+<!--    const SUP_LABELS    = /*[[${supLabels}]]*/ [];-->
+<!--    const SUP_VALUES    = /*[[${supValues}]]*/ [];-->
+<!--    const PROD_LABELS   = /*[[${prodLabels}]]*/ [];-->
+<!--    const PROD_VALUES   = /*[[${prodValues}]]*/ [];-->
+<!--    const THIS_MONTH    = /*[[${thisMonthTotal}]]*/ 0;-->
+<!--    const LAST_MONTH    = /*[[${lastMonthTotal}]]*/ 0;-->
+<!--    /*]]>*/-->
+<!--</script>-->
+
+<!--<script th:src="@{/js/dashboard-charts.js}"></script>-->
+
+<!--</body>-->
+<!--</html>-->

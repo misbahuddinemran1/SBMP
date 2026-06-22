@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!--<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create your eLoan SaaS account - Smart Business Management Platform">
+    <title>Register - eLoan SaaS</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-blue: #3B82F6;
+            --primary-blue-light: #60A5FA;
+            --primary-blue-dark: #2563EB;
+            --secondary-blue: #0EA5E9;
+            --accent-cyan: #06B6D4;
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+            --bg-light: #F8FAFC;
+            --bg-white: #FFFFFF;
+            --border-light: #E2E8F0;
+            --success-green: #10B981;
+            --warning-yellow: #F59E0B;
+            --error-red: #EF4444;
+            --shadow-sm: 0 2px 8px rgba(59, 130, 246, 0.08);
+            --shadow-md: 0 4px 24px rgba(59, 130, 246, 0.12);
+            --shadow-lg: 0 8px 40px rgba(59, 130, 246, 0.16);
+            --gradient-primary: linear-gradient(135deg, #3B82F6 0%, #0EA5E9 100%);
+            --gradient-light: linear-gradient(135deg, #EFF6FF 0%, #F0F9FF 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-dark);
+            line-height: 1.6;
+            background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 50%, #F0F9FF 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            left: -20%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .register-container {
+            width: 100%;
+            max-width: 680px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .register-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+        }
+
+        .brand-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .brand-tagline {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .register-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .register-subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+
+        .section-number {
+            width: 36px;
+            height: 36px;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .form-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .required-star {
+            color: var(--error-red);
+            margin-left: 0.25rem;
+        }
+
+        .form-control,
+        .form-select {
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: var(--bg-white);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        .form-control.is-invalid,
+        .form-select.is-invalid {
+            border-color: var(--error-red);
+        }
+
+        .form-control.is-invalid:focus,
+        .form-select.is-invalid:focus {
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+        }
+
+        .form-control.is-valid,
+        .form-select.is-valid {
+            border-color: var(--success-green);
+        }
+
+        .form-control.is-valid:focus,
+        .form-select.is-valid:focus {
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+
+        .invalid-feedback,
+        .valid-feedback {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+            transition: color 0.3s ease;
+            z-index: 10;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-blue);
+        }
+
+        .password-strength {
+            margin-top: 0.75rem;
+        }
+
+        .strength-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .strength-bar {
+            height: 6px;
+            background: var(--border-light);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .strength-weak .strength-fill {
+            width: 33%;
+            background: var(--error-red);
+        }
+
+        .strength-medium .strength-fill {
+            width: 66%;
+            background: var(--warning-yellow);
+        }
+
+        .strength-strong .strength-fill {
+            width: 100%;
+            background: var(--success-green);
+        }
+
+        .form-check {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-check-input {
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+
+        .form-check-input:focus {
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-check-label {
+            margin-left: 0.5rem;
+            cursor: pointer;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .form-check-label a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-check-label a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            border: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary-auth {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary-auth:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary-auth:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary-auth:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .register-footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .register-footer p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .register-footer a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .back-home {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .back-home a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .back-home a:hover {
+            color: var(--primary-blue);
+        }
+
+        .back-home i {
+            margin-right: 0.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .register-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .brand-name {
+                font-size: 1.75rem;
+            }
+
+            .register-title {
+                font-size: 1.5rem;
+            }
+
+            .section-title {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Input Icons */
+        .input-icon-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .input-icon-wrapper .form-control,
+        .input-icon-wrapper .form-select {
+            padding-left: 2.75rem;
+        }
+
+        /* Textarea */
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="register-container">
+    <div class="register-card">
+        <!-- Brand Logo -->
+        <div class="brand-logo">
+            <h1 class="brand-name">eLoan SaaS</h1>
+            <p class="brand-tagline">Smart Business Management</p>
+        </div>
+
+        <!-- Register Header -->
+        <div class="register-header">
+            <h2 class="register-title">Create Your Account</h2>
+            <p class="register-subtitle">Start managing your business smarter today</p>
+        </div>
+
+        <!-- Registration Form -->
+        <form
+                id="registerForm"
+                th:action="@{/register}"
+                method="post"
+                novalidate
+        >
+
+            <!-- SECTION 1: Business Information -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-number">1</div>
+                    <h3 class="section-title">Business Information</h3>
+                </div>
+
+                <div class="row">
+                    <!-- Business Name -->
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="businessName" class="form-label">
+                                Business Name<span class="required-star">*</span>
+                            </label>
+                            <div class="input-icon-wrapper">
+                                <i class="bi bi-shop input-icon"></i>
+                                <input
+                                        type="text"
+                                        class="form-control"
+                                        id="businessName"
+                                        name="businessName"
+                                        placeholder="Enter your business name"
+                                        required
+                                >
+                            </div>
+                            <div class="invalid-feedback">
+                                Please enter your business name
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Business Type -->
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="businessType" class="form-label">
+                                Business Type<span class="required-star">*</span>
+                            </label>
+                            <div class="input-icon-wrapper">
+                                <i class="bi bi-briefcase input-icon"></i>
+                                <select class="form-select" id="businessType" name="businessType" required>
+                                    <option value="" selected disabled>Select business type</option>
+                                    <option value="retail">Retail Store</option>
+                                    <option value="wholesale">Wholesale</option>
+                                    <option value="ecommerce">E-commerce</option>
+                                    <option value="restaurant">Restaurant/Café</option>
+                                    <option value="manufacturing">Manufacturing</option>
+                                    <option value="service">Service Provider</option>
+                                    <option value="consulting">Consulting</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="invalid-feedback">
+                                Please select your business type
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Business Address -->
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="businessAddress" class="form-label">
+                                Business Address<span class="required-star">*</span>
+                            </label>
+                            <div class="input-icon-wrapper">
+                                <i class="bi bi-geo-alt input-icon"></i>
+                                <textarea
+                                        class="form-control"
+                                        id="businessAddress"
+                                        name="address"
+                                        placeholder="Enter your business address"
+                                        rows="3"
+                                        required
+                                ></textarea>
+                            </div>
+                            <div class="invalid-feedback">
+                                Please enter your business address
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: Owner Information -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-number">2</div>
+                    <h3 class="section-title">Owner Information</h3>
+                </div>
+
+                <div class="row">
+                    <!-- Full Name -->
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="fullName" class="form-label">
+                                Full Name<span class="required-star">*</span>
+                            </label>
+                            <div class="input-icon-wrapper">
+                                <i class="bi bi-person input-icon"></i>
+                                <input
+                                        type="text"
+                                        class="form-control"
+                                        id="fullName"
+                                        name="name"
+                                        placeholder="Enter your full name"
+                                        required
+                                >
+                            </div>
+                            <div class="invalid-feedback">
+                                Please enter your full name
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="phoneNumber" class="form-label">
+                                Phone Number<span class="required-star">*</span>
+                            </label>
+                            <div class="input-icon-wrapper">
+                                <i class="bi bi-telephone input-icon"></i>
+                                <input
+                                        type="tel"
+                                        class="form-control"
+                                        id="phoneNumber"
+                                        name="phone"
+                                        placeholder="+880 1XXX-XXXXXX"
+                                        required
+                                >
+                            </div>
+                            <div class="invalid-feedback">
+                                Please enter a valid phone number
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Address -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="email" class="form-label">
+                                Email Address<span class="required-star">*</span>
+                            </label>
+                            <div class="input-icon-wrapper">
+                                <i class="bi bi-envelope input-icon"></i>
+                                <input
+                                        type="email"
+                                        class="form-control"
+                                        id="email"
+                                        name="email"
+                                        placeholder="your.email@example.com"
+                                        required
+                                >
+                            </div>
+                            <div class="invalid-feedback">
+                                Please enter a valid email address
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="password" class="form-label">
+                                Password<span class="required-star">*</span>
+                            </label>
+                            <div class="input-icon-wrapper password-wrapper">
+                                <i class="bi bi-lock input-icon"></i>
+                                <input
+                                        type="password"
+                                        class="form-control"
+                                        id="password"
+                                        name="password"
+                                        placeholder="Create a strong password"
+                                        required
+                                        minlength="8"
+                                >
+                                <button type="button" class="password-toggle" id="togglePassword" aria-label="Toggle password visibility">
+                                    <i class="bi bi-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback">
+                                Password must be at least 8 characters
+                            </div>
+
+                            <!-- Password Strength Indicator -->
+                            <div class="password-strength" id="passwordStrength">
+                                <div class="strength-label">Password strength: <span id="strengthText">None</span></div>
+                                <div class="strength-bar">
+                                    <div class="strength-fill" id="strengthFill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="confirmPassword" class="form-label">
+                                Confirm Password<span class="required-star">*</span>
+                            </label>
+                            <div class="input-icon-wrapper password-wrapper">
+                                <i class="bi bi-lock-fill input-icon"></i>
+                                <input
+                                        type="password"
+                                        class="form-control"
+                                        id="confirmPassword"
+                                        name="confirmPassword"
+                                        placeholder="Confirm your password"
+                                        required
+                                >
+                                <button type="button" class="password-toggle" id="toggleConfirmPassword" aria-label="Toggle confirm password visibility">
+                                    <i class="bi bi-eye" id="toggleConfirmIcon"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback">
+                                Passwords do not match
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="termsConditions" name="termsConditions" required>
+                <label class="form-check-label" for="termsConditions">
+                    I agree to the <a href="#terms">Terms & Conditions</a> and <a href="#privacy">Privacy Policy</a>
+                </label>
+                <div class="invalid-feedback">
+                    You must agree to the terms and conditions
+                </div>
+            </div>
+
+            <!-- Register Button -->
+            <button type="submit" class="btn btn-primary-auth btn-auth" id="registerBtn">
+                <i class="bi bi-rocket-takeoff me-2"></i>Create Account
+            </button>
+        </form>
+
+        <!-- Footer -->
+        <div class="register-footer">
+            <p>Already have an account? <a href="login.html">Sign in here</a></p>
+        </div>
+    </div>
+
+    <!-- Back to Home -->
+    <div class="back-home">
+        <a href="eloan-landing.html">
+            <i class="bi bi-arrow-left"></i>Back to Home
+        </a>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Password Toggle for Password field
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.getElementById('toggleIcon');
+
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+
+        if (type === 'password') {
+            toggleIcon.classList.remove('bi-eye-slash');
+            toggleIcon.classList.add('bi-eye');
+        } else {
+            toggleIcon.classList.remove('bi-eye');
+            toggleIcon.classList.add('bi-eye-slash');
+        }
+    });
+
+    // Password Toggle for Confirm Password field
+    const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const toggleConfirmIcon = document.getElementById('toggleConfirmIcon');
+
+    toggleConfirmPassword.addEventListener('click', function() {
+        const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        confirmPasswordInput.setAttribute('type', type);
+
+        if (type === 'password') {
+            toggleConfirmIcon.classList.remove('bi-eye-slash');
+            toggleConfirmIcon.classList.add('bi-eye');
+        } else {
+            toggleConfirmIcon.classList.remove('bi-eye');
+            toggleConfirmIcon.classList.add('bi-eye-slash');
+        }
+    });
+
+    // Password Strength Indicator
+    const strengthText = document.getElementById('strengthText');
+    const strengthBar = document.getElementById('passwordStrength');
+
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        const strength = calculatePasswordStrength(password);
+
+        // Remove all strength classes
+        strengthBar.classList.remove('strength-weak', 'strength-medium', 'strength-strong');
+
+        if (password.length === 0) {
+            strengthText.textContent = 'None';
+        } else if (strength < 40) {
+            strengthBar.classList.add('strength-weak');
+            strengthText.textContent = 'Weak';
+        } else if (strength < 70) {
+            strengthBar.classList.add('strength-medium');
+            strengthText.textContent = 'Medium';
+        } else {
+            strengthBar.classList.add('strength-strong');
+            strengthText.textContent = 'Strong';
+        }
+    });
+
+    function calculatePasswordStrength(password) {
+        let strength = 0;
+
+        if (password.length >= 8) strength += 20;
+        if (password.length >= 12) strength += 10;
+        if (/[a-z]/.test(password)) strength += 15;
+        if (/[A-Z]/.test(password)) strength += 15;
+        if (/[0-9]/.test(password)) strength += 20;
+        if (/[^a-zA-Z0-9]/.test(password)) strength += 20;
+
+        return strength;
+    }
+
+    // Form Validation
+    const registerForm = document.getElementById('registerForm');
+    const registerBtn = document.getElementById('registerBtn');
+
+    // Email validation
+    function validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    // Phone validation
+    function validatePhone(phone) {
+        const phoneRegex = /^[\d\s\-\+\(\)]{10,}$/;
+        return phoneRegex.test(phone);
+    }
+
+    // Real-time validation for email
+    const emailInput = document.getElementById('email');
+    emailInput.addEventListener('blur', function() {
+        if (this.value.trim() === '') {
+            this.classList.remove('is-valid', 'is-invalid');
+        } else if (validateEmail(this.value)) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+        }
+    });
+
+    // Real-time validation for phone
+    const phoneInput = document.getElementById('phoneNumber');
+    phoneInput.addEventListener('blur', function() {
+        if (this.value.trim() === '') {
+            this.classList.remove('is-valid', 'is-invalid');
+        } else if (validatePhone(this.value)) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+        }
+    });
+
+    // Password match validation
+    confirmPasswordInput.addEventListener('blur', function() {
+        if (this.value.trim() === '') {
+            this.classList.remove('is-valid', 'is-invalid');
+        } else if (this.value === passwordInput.value) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else {
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+        }
+    });
+
+    // Form Submit
+    registerForm.addEventListener('submit', function(e) {
+
+
+        let isValid = true;
+        const formElements = this.elements;
+
+        // Validate all required fields
+        for (let element of formElements) {
+            if (element.hasAttribute('required') && element.type !== 'submit') {
+                if (element.type === 'checkbox') {
+                    if (!element.checked) {
+                        element.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        element.classList.remove('is-invalid');
+                    }
+                } else if (element.value.trim() === '') {
+                    element.classList.add('is-invalid');
+                    element.classList.remove('is-valid');
+                    isValid = false;
+                } else {
+                    // Additional validation based on field type
+                    if (element.id === 'email' && !validateEmail(element.value)) {
+                        element.classList.add('is-invalid');
+                        element.classList.remove('is-valid');
+                        isValid = false;
+                    } else if (element.id === 'phoneNumber' && !validatePhone(element.value)) {
+                        element.classList.add('is-invalid');
+                        element.classList.remove('is-valid');
+                        isValid = false;
+                    } else if (element.id === 'password' && element.value.length < 8) {
+                        element.classList.add('is-invalid');
+                        element.classList.remove('is-valid');
+                        isValid = false;
+                    } else if (element.id === 'confirmPassword' && element.value !== passwordInput.value) {
+                        element.classList.add('is-invalid');
+                        element.classList.remove('is-valid');
+                        isValid = false;
+                    } else {
+                        element.classList.remove('is-invalid');
+                        element.classList.add('is-valid');
+                    }
+                }
+            }
+        }
+
+        if (isValid) {
+            // Show loading state
+            registerBtn.classList.add('btn-loading');
+            registerBtn.disabled = true;
+
+            // Collect form data
+            const formData = {
+                businessName: document.getElementById('businessName').value,
+                businessType: document.getElementById('businessType').value,
+                businessAddress: document.getElementById('businessAddress').value,
+                fullName: document.getElementById('fullName').value,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+
+
+        } else {
+            // Scroll to first invalid field
+            const firstInvalid = this.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalid.focus();
+            }
+        }
+    });
+
+    // Clear validation on input
+    const allInputs = document.querySelectorAll('.form-control, .form-select, .form-check-input');
+    allInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid') || this.classList.contains('is-valid')) {
+                this.classList.remove('is-invalid', 'is-valid');
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<!--/*
+    eLoan SaaS — dashboard.html
+    Main Dashboard Template
+    Spring Boot + Thymeleaf | Bootstrap 5
+    Layout: Fixed Sidebar + Sticky Topbar + Scrollable Content
+*/-->
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="eLoan SaaS — Business Management Dashboard">
+  <meta name="theme-color" content="#2563EB">
+  <title th:text="${pageTitle ?: 'Dashboard'} + ' — eLoan SaaS'">Dashboard — eLoan SaaS</title>
+
+  <!-- Bootstrap 5 CSS -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Dashboard Styles -->
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}" href="dashboard.css">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%232563EB'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='18' fill='white'>₹</text></svg>">
+</head>
+
+<body>
+
+<!-- =============================================
+     APP SHELL
+     ============================================= -->
+<div class="app-shell">
+
+  <!-- SIDEBAR (Fragment) -->
+  <div th:replace="~{/dashboard/fragments/sidebar :: sidebar}">
+    <!-- Fallback: sidebar included at build time -->
+  </div>
+
+  <!-- SIDEBAR OVERLAY (Fragment / mobile) -->
+  <div th:replace="~{dashboard/fragments/sidebar :: sidebar-overlay}">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  </div>
+
+  <!-- =============================================
+       MAIN AREA
+       ============================================= -->
+  <div class="main-area" id="mainArea">
+
+    <!-- TOPBAR (Fragment) -->
+    <div th:replace="~{dashboard/fragments/topbar :: topbar}">
+      <!-- Fallback: topbar included at build time -->
+    </div>
+
+    <!-- =============================================
+         PAGE CONTENT
+         ============================================= -->
+    <main class="page-content" role="main">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Dashboard</h1>
+          <p class="page-subtitle">Welcome back! Here's what's happening today.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="page-date">
+            <i class="bi bi-calendar3 me-1"></i>
+            <span id="currentDate">Today</span>
+          </span>
+          <button class="btn-sm-primary" onclick="window.location.href='/sales/new'">
+            <i class="bi bi-plus-lg"></i> New Sale
+          </button>
+        </div>
+      </div>
+
+      <!-- =============================================
+           STAT CARDS ROW
+           ============================================= -->
+      <div class="row g-3 mb-4">
+
+        <!-- Today's Sales -->
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon blue">
+                <i class="bi bi-cart-check"></i>
+              </div>
+              <button class="stat-card-menu" aria-label="More options">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+            </div>
+            <div>
+              <div class="stat-card-value"
+                   data-count="18450"
+                   data-prefix="৳ "
+                   th:attr="data-count=${todaySales ?: 18450}"
+                   th:text="${'৳ ' + #numbers.formatInteger(todaySales ?: 18450, 1, 'COMMA')}">
+                ৳ 18,450
+              </div>
+              <div class="stat-card-label">Today's Sales</div>
+            </div>
+            <div class="stat-card-trend up">
+              <i class="bi bi-arrow-up-right-circle-fill"></i>
+              <span th:text="${todaySalesTrend ?: '+12.4%'}">+12.4%</span>
+              <span class="stat-card-trend-text">vs yesterday</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Revenue -->
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon green">
+                <i class="bi bi-graph-up-arrow"></i>
+              </div>
+              <button class="stat-card-menu" aria-label="More options">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+            </div>
+            <div>
+              <div class="stat-card-value"
+                   data-count="384200"
+                   data-prefix="৳ "
+                   th:attr="data-count=${monthlyRevenue ?: 384200}"
+                   th:text="${'৳ ' + #numbers.formatInteger(monthlyRevenue ?: 384200, 1, 'COMMA')}">
+                ৳ 3,84,200
+              </div>
+              <div class="stat-card-label">Monthly Revenue</div>
+            </div>
+            <div class="stat-card-trend up">
+              <i class="bi bi-arrow-up-right-circle-fill"></i>
+              <span th:text="${monthlyRevenueTrend ?: '+8.1%'}">+8.1%</span>
+              <span class="stat-card-trend-text">vs last month</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Products -->
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon cyan">
+                <i class="bi bi-boxes"></i>
+              </div>
+              <button class="stat-card-menu" aria-label="More options">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+            </div>
+            <div>
+              <div class="stat-card-value"
+                   data-count="248"
+                   th:attr="data-count=${totalProducts ?: 248}"
+                   th:text="${totalProducts ?: 248}">
+                248
+              </div>
+              <div class="stat-card-label">Total Products</div>
+            </div>
+            <div class="stat-card-trend up">
+              <i class="bi bi-arrow-up-right-circle-fill"></i>
+              <span>+6 new</span>
+              <span class="stat-card-trend-text">this month</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Low Stock Alerts -->
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon red">
+                <i class="bi bi-exclamation-triangle"></i>
+              </div>
+              <button class="stat-card-menu" aria-label="More options">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+            </div>
+            <div>
+              <div class="stat-card-value"
+                   data-count="14"
+                   th:attr="data-count=${lowStockCount ?: 14}"
+                   th:text="${lowStockCount ?: 14}">
+                14
+              </div>
+              <div class="stat-card-label">Low Stock Alerts</div>
+            </div>
+            <div class="stat-card-trend down">
+              <i class="bi bi-exclamation-circle-fill"></i>
+              <span>Needs attention</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /stat cards -->
+
+      <!-- =============================================
+           ROW 2: Recent Sales + Quick Actions
+           ============================================= -->
+      <div class="row g-3 mb-3">
+
+        <!-- Recent Sales Table -->
+        <div class="col-12 col-xl-8">
+          <div class="section-card h-100">
+            <div class="section-card-header">
+              <div class="section-card-title">
+                <i class="bi bi-receipt"></i>
+                Recent Sales
+              </div>
+              <div class="section-card-actions">
+                <a th:href="@{/sales}" class="btn-sm-outline">
+                  View all <i class="bi bi-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+            <div class="section-card-body">
+              <div class="table-responsive-wrapper">
+                <table class="data-table" aria-label="Recent sales">
+                  <thead>
+                  <tr>
+                    <th>Customer</th>
+                    <th>Invoice</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <!-- Thymeleaf: th:each="sale : ${recentSales}" -->
+                  <tr>
+                    <td>
+                      <div class="customer-cell">
+                        <div class="customer-avatar">RK</div>
+                        <div>
+                          <div class="customer-name">Rahim Khan</div>
+                          <div class="customer-id">#CUS-0041</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="fw-600">#INV-1048</span></td>
+                    <td><span class="amount-cell">৳ 6,800</span></td>
+                    <td><span class="color-muted">May 17, 2026</span></td>
+                    <td><span class="badge-status paid">Paid</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="customer-cell">
+                        <div class="customer-avatar" style="background:var(--success-light);color:var(--success);">KT</div>
+                        <div>
+                          <div class="customer-name">Karim Traders</div>
+                          <div class="customer-id">#CUS-0038</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="fw-600">#INV-1047</span></td>
+                    <td><span class="amount-cell">৳ 14,200</span></td>
+                    <td><span class="color-muted">May 16, 2026</span></td>
+                    <td><span class="badge-status pending">Pending</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="customer-cell">
+                        <div class="customer-avatar" style="background:var(--info-light);color:var(--info);">SB</div>
+                        <div>
+                          <div class="customer-name">Salma Begum</div>
+                          <div class="customer-id">#CUS-0035</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="fw-600">#INV-1046</span></td>
+                    <td><span class="amount-cell">৳ 3,450</span></td>
+                    <td><span class="color-muted">May 15, 2026</span></td>
+                    <td><span class="badge-status paid">Paid</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="customer-cell">
+                        <div class="customer-avatar" style="background:var(--warning-light);color:var(--warning);">MH</div>
+                        <div>
+                          <div class="customer-name">Mizan Hardware</div>
+                          <div class="customer-id">#CUS-0031</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="fw-600">#INV-1045</span></td>
+                    <td><span class="amount-cell">৳ 22,100</span></td>
+                    <td><span class="color-muted">May 15, 2026</span></td>
+                    <td><span class="badge-status paid">Paid</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="customer-cell">
+                        <div class="customer-avatar" style="background:var(--danger-light);color:var(--danger);">AN</div>
+                        <div>
+                          <div class="customer-name">Asif &amp; Nafisa</div>
+                          <div class="customer-id">#CUS-0028</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="fw-600">#INV-1044</span></td>
+                    <td><span class="amount-cell">৳ 9,800</span></td>
+                    <td><span class="color-muted">May 14, 2026</span></td>
+                    <td><span class="badge-status failed">Failed</span></td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div><!-- /section-card -->
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-12 col-xl-4">
+          <div class="section-card h-100">
+            <div class="section-card-header">
+              <div class="section-card-title">
+                <i class="bi bi-lightning-charge"></i>
+                Quick Actions
+              </div>
+            </div>
+            <div class="section-card-body">
+              <div class="quick-actions-grid">
+
+                <button class="quick-action-btn" onclick="window.location.href='/sales/new'">
+                  <div class="quick-action-icon" style="background:var(--primary-light);">
+                    <i class="bi bi-plus-circle" style="color:var(--primary);"></i>
+                  </div>
+                  <span class="quick-action-label">New Sale</span>
+                </button>
+
+                <button class="quick-action-btn" onclick="window.location.href='/products/add'">
+                  <div class="quick-action-icon" style="background:var(--success-light);">
+                    <i class="bi bi-bag-plus" style="color:var(--success);"></i>
+                  </div>
+                  <span class="quick-action-label">Add Product</span>
+                </button>
+
+                <button class="quick-action-btn" onclick="window.location.href='/expenses/new'">
+                  <div class="quick-action-icon" style="background:var(--warning-light);">
+                    <i class="bi bi-wallet2" style="color:var(--warning);"></i>
+                  </div>
+                  <span class="quick-action-label">Add Expense</span>
+                </button>
+
+                <button class="quick-action-btn" onclick="window.location.href='/due-management'">
+                  <div class="quick-action-icon" style="background:var(--danger-light);">
+                    <i class="bi bi-exclamation-circle" style="color:var(--danger);"></i>
+                  </div>
+                  <span class="quick-action-label">View Dues</span>
+                </button>
+
+                <button class="quick-action-btn" onclick="window.location.href='/reports'">
+                  <div class="quick-action-icon" style="background:var(--info-light);">
+                    <i class="bi bi-bar-chart-line" style="color:var(--info);"></i>
+                  </div>
+                  <span class="quick-action-label">Reports</span>
+                </button>
+
+                <button class="quick-action-btn" onclick="window.location.href='/inventory/category'">
+                  <div class="quick-action-icon" style="background:#F3E8FF;">
+                    <i class="bi bi-boxes" style="color:#9333EA;"></i>
+                  </div>
+                  <span class="quick-action-label">Inventory</span>
+                </button>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /row 2 -->
+
+      <!-- =============================================
+           ROW 3: Low Stock Products
+           ============================================= -->
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="section-card">
+            <div class="section-card-header">
+              <div class="section-card-title">
+                <i class="bi bi-exclamation-triangle"></i>
+                Low Stock Products
+              </div>
+              <div class="section-card-actions">
+                <a th:href="@{/inventory?filter=low-stock}" class="btn-sm-outline">
+                  <i class="bi bi-funnel"></i> View all
+                </a>
+                <button class="btn-sm-primary" onclick="window.location.href='/products/reorder'">
+                  <i class="bi bi-arrow-clockwise"></i> Reorder
+                </button>
+              </div>
+            </div>
+            <div class="section-card-body">
+              <div class="table-responsive-wrapper">
+                <table class="data-table" aria-label="Low stock products">
+                  <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>SKU</th>
+                    <th>In Stock</th>
+                    <th>Min Stock</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <!-- Thymeleaf: th:each="product : ${lowStockProducts}" -->
+                  <tr>
+                    <td>
+                      <div class="product-cell">
+                        <div class="product-thumb">📦</div>
+                        <div>
+                          <div class="fw-600" style="color:var(--text-primary);font-size:0.875rem;">Premium Rice 5kg</div>
+                          <div style="font-size:0.75rem;color:var(--text-muted);">Agro</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="color-muted">Grains &amp; Cereals</span></td>
+                    <td><code style="font-size:0.78rem;background:var(--bg-surface);padding:2px 6px;border-radius:4px;">SKU-0041</code></td>
+                    <td><span class="fw-600" style="color:var(--danger);">3 bags</span></td>
+                    <td><span class="color-muted">20 bags</span></td>
+                    <td><span class="stock-badge critical">Critical</span></td>
+                    <td>
+                      <button class="btn-sm-primary" style="padding:4px 10px;font-size:0.75rem;">
+                        <i class="bi bi-plus"></i> Restock
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="product-cell">
+                        <div class="product-thumb">🛢</div>
+                        <div>
+                          <div class="fw-600" style="color:var(--text-primary);font-size:0.875rem;">Soybean Oil 1L</div>
+                          <div style="font-size:0.75rem;color:var(--text-muted);">Grocery</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="color-muted">Cooking Oils</span></td>
+                    <td><code style="font-size:0.78rem;background:var(--bg-surface);padding:2px 6px;border-radius:4px;">SKU-0089</code></td>
+                    <td><span class="fw-600" style="color:var(--warning);">8 bottles</span></td>
+                    <td><span class="color-muted">30 bottles</span></td>
+                    <td><span class="stock-badge low">Low</span></td>
+                    <td>
+                      <button class="btn-sm-primary" style="padding:4px 10px;font-size:0.75rem;">
+                        <i class="bi bi-plus"></i> Restock
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="product-cell">
+                        <div class="product-thumb">🧴</div>
+                        <div>
+                          <div class="fw-600" style="color:var(--text-primary);font-size:0.875rem;">Washing Liquid 500ml</div>
+                          <div style="font-size:0.75rem;color:var(--text-muted);">Household</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="color-muted">Cleaning</span></td>
+                    <td><code style="font-size:0.78rem;background:var(--bg-surface);padding:2px 6px;border-radius:4px;">SKU-0112</code></td>
+                    <td><span class="fw-600" style="color:var(--danger);">2 units</span></td>
+                    <td><span class="color-muted">25 units</span></td>
+                    <td><span class="stock-badge critical">Critical</span></td>
+                    <td>
+                      <button class="btn-sm-primary" style="padding:4px 10px;font-size:0.75rem;">
+                        <i class="bi bi-plus"></i> Restock
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="product-cell">
+                        <div class="product-thumb">🥛</div>
+                        <div>
+                          <div class="fw-600" style="color:var(--text-primary);font-size:0.875rem;">Full Cream Milk 1L</div>
+                          <div style="font-size:0.75rem;color:var(--text-muted);">Dairy</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="color-muted">Dairy &amp; Eggs</span></td>
+                    <td><code style="font-size:0.78rem;background:var(--bg-surface);padding:2px 6px;border-radius:4px;">SKU-0056</code></td>
+                    <td><span class="fw-600" style="color:var(--warning);">12 cartons</span></td>
+                    <td><span class="color-muted">40 cartons</span></td>
+                    <td><span class="stock-badge low">Low</span></td>
+                    <td>
+                      <button class="btn-sm-primary" style="padding:4px 10px;font-size:0.75rem;">
+                        <i class="bi bi-plus"></i> Restock
+                      </button>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /row 3 -->
+
+    </main><!-- /page-content -->
+
+  </div><!-- /main-area -->
+
+</div><!-- /app-shell -->
+
+<!-- =============================================
+     SCRIPTS
+     ============================================= -->
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmRA1MeTdCMTlJldpGBMRa55pGBc"
+        crossorigin="anonymous"></script>
+
+<!-- Dashboard JS -->
+<script th:src="@{/js/dashboard.js}" src="dashboard.js"></script>
+
+<!-- Inline: Set current date -->
+<script>
+  (function() {
+    var el = document.getElementById('currentDate');
+    if (el) {
+      var d = new Date();
+      var opts = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+      el.textContent = d.toLocaleDateString('en-GB', opts);
+    }
+  })();
+</script>
+
+</body>
+</html>

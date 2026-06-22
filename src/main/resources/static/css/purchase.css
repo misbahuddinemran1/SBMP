@@ -1,0 +1,746 @@
+/* ============================================================
+   purchase.css — eLoan SaaS | Purchase Module
+   Mirrors stock.css pattern exactly
+   ============================================================ */
+
+/* ── Layout (same as stock.css — required for erp-main/content) */
+.erp-body {
+  background: #f8fafc;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #1e293b;
+  min-height: 100vh;
+}
+
+.erp-main {
+  margin-left: 260px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left .25s ease;
+}
+
+.erp-content {
+  flex: 1;
+  padding: 24px;
+}
+
+@media (max-width: 991px) {
+  .erp-main    { margin-left: 0; }
+  .erp-content { padding: 16px; }
+}
+
+/* ── Page Header ─────────────────────────────────────────────── */
+.page-header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -.025em;
+  line-height: 1.25;
+}
+
+.page-subtitle {
+  font-size: .875rem;
+  color: #64748b;
+  margin-top: .25rem;
+}
+
+/* ── Breadcrumb ──────────────────────────────────────────────── */
+.breadcrumb-erp {
+  font-size: .8rem;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem;
+}
+
+.breadcrumb-erp .breadcrumb-item a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.breadcrumb-erp .breadcrumb-item a:hover { text-decoration: underline; }
+.breadcrumb-erp .breadcrumb-item.active  { color: #64748b; }
+
+/* ── ERP Card ────────────────────────────────────────────────── */
+.erp-card {
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / .06);
+  overflow: hidden;
+}
+
+.erp-card__header {
+  display: flex;
+  align-items: center;
+  gap: .875rem;
+  padding: .875rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+.erp-card__title {
+  font-size: .875rem;
+  font-weight: 600;
+  color: #334155;
+  margin: 0;
+}
+
+.erp-card__subtitle {
+  font-size: .78rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.erp-card__body {
+  padding: 1.25rem;
+}
+
+/* ── ERP Card Header Icon ────────────────────────────────────── */
+.erp-card__header-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.erp-card__header-icon--green  { background: #ecfdf5; color: #059669; }
+.erp-card__header-icon--red    { background: #fef2f2; color: #dc2626; }
+.erp-card__header-icon--amber  { background: #fffbeb; color: #d97706; }
+.erp-card__header-icon--violet { background: #f5f3ff; color: #7c3aed; }
+.erp-card__header-icon--teal   { background: #f0fdfa; color: #0d9488; }
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn-primary-erp {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .875rem;
+  font-weight: 600;
+  padding: .5rem 1.125rem;
+  border-radius: 10px;
+  border: 1.5px solid #2563eb;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+  transition: all .18s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-primary-erp:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(37 99 235 / .28);
+}
+
+.btn-ghost-erp {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .875rem;
+  font-weight: 600;
+  padding: .5rem 1.125rem;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  transition: all .18s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-ghost-erp:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+.btn-warning-erp {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .875rem;
+  font-weight: 600;
+  padding: .5rem 1.125rem;
+  border-radius: 10px;
+  border: 1.5px solid #d97706;
+  background: #fffbeb;
+  color: #d97706;
+  cursor: pointer;
+  transition: all .18s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-warning-erp:hover {
+  background: #d97706;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(217 119 6 / .25);
+}
+
+/* ── Month Compare ───────────────────────────────────────────── */
+.month-block {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+}
+
+.month-block__label {
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #94a3b8;
+}
+
+.month-block__value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.month-block__value--muted { color: #64748b; }
+
+.month-vs {
+  font-size: .8125rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  letter-spacing: .05em;
+}
+
+#month-trend-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: .8125rem;
+  font-weight: 700;
+  padding: .3rem .75rem;
+  border-radius: 9999px;
+}
+
+/* ── ERP Table ───────────────────────────────────────────────── */
+.erp-table {
+  font-size: .875rem;
+}
+
+.erp-table thead th {
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: #64748b;
+  border-bottom: 2px solid #f1f5f9;
+  padding: .875rem 1rem;
+  background: #f8fafc;
+  white-space: nowrap;
+}
+
+.erp-table tbody td {
+  padding: .875rem 1rem;
+  border-bottom: 1px solid #f8fafc;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.erp-table tbody tr:last-child td { border-bottom: none; }
+.erp-table tbody tr:hover td      { background: #f8fafc; }
+
+/* ── Supplier Avatar ─────────────────────────────────────────── */
+.supplier-avatar-sm {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #eff6ff, #bfdbfe);
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .875rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Invoice Status Badges ───────────────────────────────────── */
+.badge-invoice-status {
+  display: inline-flex;
+  align-items: center;
+  font-size: .72rem;
+  font-weight: 700;
+  padding: .25rem .65rem;
+  border-radius: 9999px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.badge-invoice-status.DRAFT     { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+.badge-invoice-status.COMPLETED { background: #ecfdf5; color: #059669; border: 1px solid rgba(5,150,105,.2); }
+.badge-invoice-status.CANCELLED { background: #fef2f2; color: #dc2626; border: 1px solid rgba(220,38,38,.2); }
+.badge-invoice-status.PARTIAL   { background: #fffbeb; color: #d97706; border: 1px solid rgba(217,119,6,.2); }
+
+/* ── Due Badge ───────────────────────────────────────────────── */
+.badge-due {
+  display: inline-flex;
+  align-items: center;
+  font-size: .8125rem;
+  font-weight: 600;
+  padding: .2rem .55rem;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+}
+
+.badge-due--ok  { background: #f1f5f9; color: #64748b; }
+.badge-due--red { background: #fef2f2; color: #dc2626; font-weight: 700; }
+
+/* ── Side List (Draft + Low Stock panels) ────────────────────── */
+.side-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .75rem 1.25rem;
+  border-bottom: 1px solid #f8fafc;
+  gap: .75rem;
+}
+
+.side-list-row:last-child { border-bottom: none; }
+.side-list-row:hover      { background: #f8fafc; }
+
+.side-list-name { font-size: .875rem; font-weight: 600; color: #1e293b; }
+.side-list-sub  { font-size: .78rem;  color: #94a3b8;  margin-top: .1rem; }
+.side-list-amt  { font-size: .875rem; font-weight: 700; color: #0f172a; text-align: right; }
+
+.side-list-link { font-size: .78rem; font-weight: 600; color: #2563eb; text-decoration: none; }
+.side-list-link:hover { text-decoration: underline; }
+
+/* ── Stock Qty Badge ─────────────────────────────────────────── */
+.badge-stock-qty {
+  display: inline-flex;
+  align-items: center;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: .2rem .6rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.badge-stock-qty--low  { background: #fffbeb; color: #d97706; border: 1px solid rgba(217,119,6,.2); }
+.badge-stock-qty--zero { background: #fef2f2; color: #dc2626; border: 1px solid rgba(220,38,38,.2); }
+
+/* ── Donut Legend ────────────────────────────────────────────── */
+.donut-legend-erp {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  font-size: .8125rem;
+}
+
+/* ── ERP Form Controls ───────────────────────────────────────── */
+.erp-select,
+.erp-input {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: .875rem;
+  color: #1e293b;
+  background: #fff;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.erp-select:focus,
+.erp-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / .1);
+  outline: none;
+}
+
+/* ── Supplier / Category Info Box ────────────────────────────── */
+.supplier-info-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: .875rem 1rem;
+  font-size: .8125rem;
+  color: #475569;
+}
+
+.supplier-info-box.hidden { display: none; }
+
+.supplier-info-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .8125rem;
+  color: #64748b;
+  margin-top: .25rem;
+}
+
+.supplier-info-row i { color: #94a3b8; font-size: .85rem; }
+
+/* ── Purchase Table ──────────────────────────────────────────── */
+.purchase-table td { padding: .625rem .875rem; }
+
+.purchase-table .form-control,
+.purchase-table .form-select {
+  font-size: .8125rem;
+  border-color: #e2e8f0;
+  border-radius: 8px;
+  height: 34px;
+  padding: .3rem .65rem;
+}
+
+.purchase-table .form-control:focus,
+.purchase-table .form-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgb(37 99 235 / .1);
+}
+
+.btn-remove-row {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1.5px solid rgba(220,38,38,.2);
+  cursor: pointer;
+  transition: all .15s;
+  font-size: .8rem;
+}
+
+.btn-remove-row:hover { background: #dc2626; color: #fff; }
+
+/* ── Summary Grid ────────────────────────────────────────────── */
+.summary-grid-erp {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .875rem;
+}
+
+.summary-item-erp {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: .875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.summary-item-erp span {
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #94a3b8;
+}
+
+.summary-item-erp strong {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.summary-item-erp--total { background: #eff6ff; border-color: #bfdbfe; }
+.summary-item-erp--total strong { color: #2563eb; }
+.summary-item-erp--due   { background: #fef2f2; border-color: rgba(220,38,38,.2); }
+.summary-item-erp--due strong { color: #dc2626; }
+
+/* ── ERP Modal ───────────────────────────────────────────────── */
+.erp-modal {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 20px 48px rgb(0 0 0 / .12);
+}
+
+.modal-icon-wrap {
+  width: 44px;
+  height: 44px;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #f8fafc; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 767.98px) {
+  .erp-table      { min-width: 750px; }
+  .purchase-table { min-width: 900px; }
+  .summary-grid-erp { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 575.98px) {
+  .summary-grid-erp { grid-template-columns: 1fr; }
+  .page-title       { font-size: 1.2rem; }
+}
+
+/* ────────────────────────────────────────────────────────────
+   PURCHASE LIST – Additional CSS
+   Add these rules to your existing purchase.css file
+   ──────────────────────────────────────────────────────────── */
+
+/* ── STAT CARDS ─────────────────────────────────────────────── */
+.erp-stat-card {
+    background: var(--erp-card-bg, #fff);
+    border: 1px solid var(--erp-border, #e9ecef);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: box-shadow .2s;
+}
+.erp-stat-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,.07);
+}
+.erp-stat-card__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #f1f3f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #6c757d;
+    flex-shrink: 0;
+}
+.erp-stat-card__icon--blue  { background: #e8f0fe; color: #3b82f6; }
+.erp-stat-card__icon--green { background: #e6f9f0; color: #22c55e; }
+.erp-stat-card__icon--red   { background: #fdecea; color: #ef4444; }
+
+.erp-stat-card__label {
+    font-size: .75rem;
+    color: var(--erp-text-muted, #6c757d);
+    margin-bottom: .2rem;
+    font-weight: 500;
+}
+.erp-stat-card__value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* ── SEARCH ──────────────────────────────────────────────────── */
+.erp-search-wrap {
+    position: relative;
+}
+.erp-search-icon {
+    position: absolute;
+    left: .75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #adb5bd;
+    font-size: .875rem;
+    pointer-events: none;
+}
+.erp-search-input {
+    padding-left: 2.2rem !important;
+}
+
+/* ── FILTER CHIPS ────────────────────────────────────────────── */
+.erp-chip {
+    padding: .35rem .9rem;
+    border-radius: 20px;
+    font-size: .8125rem;
+    font-weight: 500;
+    border: 1px solid var(--erp-border, #e9ecef);
+    background: transparent;
+    color: var(--erp-text-muted, #6c757d);
+    transition: all .15s;
+    line-height: 1.4;
+}
+.erp-chip:hover {
+    background: #f1f3f5;
+    border-color: #ced4da;
+    color: var(--erp-text, #212529);
+}
+.erp-chip--active {
+    background: var(--erp-primary, #3b82f6) !important;
+    border-color: var(--erp-primary, #3b82f6) !important;
+    color: #fff !important;
+}
+
+/* ── STATUS BADGE ────────────────────────────────────────────── */
+.erp-status-badge {
+    display: inline-block;
+    padding: .25rem .65rem;
+    border-radius: 20px;
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+}
+.erp-status-badge.COMPLETED {
+    background: #e6f9f0;
+    color: #15803d;
+}
+.erp-status-badge.DRAFT {
+    background: #fff7ed;
+    color: #c2410c;
+}
+.erp-status-badge.CANCELLED {
+    background: #fdecea;
+    color: #b91c1c;
+}
+
+/* ── ACTION ICON BUTTONS ─────────────────────────────────────── */
+.erp-icon-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: .875rem;
+    border: 1px solid var(--erp-border, #e9ecef);
+    transition: all .15s;
+    padding: 0;
+}
+.erp-icon-btn--view {
+    color: #3b82f6;
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+.erp-icon-btn--view:hover {
+    background: #3b82f6;
+    color: #fff;
+    border-color: #3b82f6;
+}
+.erp-icon-btn--edit {
+    color: #f59e0b;
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+.erp-icon-btn--edit:hover {
+    background: #f59e0b;
+    color: #fff;
+    border-color: #f59e0b;
+}
+/* ────────────────────────────────────────────────────────────
+   PURCHASE VIEW + EDIT – Additional CSS
+   Add these rules to your existing purchase.css file
+   (in addition to the purchase-list-css-additions.css rules)
+   ──────────────────────────────────────────────────────────── */
+
+/* ── INFO ITEMS (view page supplier grid) ───────────────────── */
+.erp-info-item {
+    background: var(--erp-bg-subtle, #f8f9fa);
+    border-radius: 8px;
+    padding: .6rem .75rem;
+}
+.erp-info-item__label {
+    display: block;
+    font-size: .75rem;
+    color: var(--erp-text-muted, #6c757d);
+    font-weight: 500;
+    margin-bottom: .15rem;
+}
+.erp-info-item__value {
+    display: block;
+    font-size: .875rem;
+    color: var(--erp-text, #212529);
+}
+
+/* ── PAYMENT CHIPS (view page header badges) ────────────────── */
+.erp-pay-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: .3rem .75rem;
+    border-radius: 20px;
+    font-size: .8125rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+.erp-pay-chip--green {
+    background: #e6f9f0;
+    color: #15803d;
+    border-color: #bbf7d0;
+}
+.erp-pay-chip--red {
+    background: #fdecea;
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+
+/* ── METHOD CHIP (payment method badge) ─────────────────────── */
+.erp-method-chip {
+    display: inline-block;
+    padding: .2rem .6rem;
+    border-radius: 6px;
+    font-size: .75rem;
+    font-weight: 600;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+/* ── DANGER BUTTON ──────────────────────────────────────────── */
+.btn-danger-erp {
+    background: #fdecea;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    padding: .45rem 1rem;
+    border-radius: 8px;
+    font-size: .875rem;
+    font-weight: 500;
+    transition: all .15s;
+    display: inline-flex;
+    align-items: center;
+}
+.btn-danger-erp:hover {
+    background: #ef4444;
+    color: #fff;
+    border-color: #ef4444;
+}
+
+/* ── WARNING BUTTON (edit) ──────────────────────────────────── */
+.btn-warning-erp {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    padding: .45rem 1rem;
+    border-radius: 8px;
+    font-size: .875rem;
+    font-weight: 500;
+    transition: all .15s;
+    display: inline-flex;
+    align-items: center;
+}
+.btn-warning-erp:hover {
+    background: #f59e0b;
+    color: #fff;
+    border-color: #f59e0b;
+}
