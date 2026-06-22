@@ -66,6 +66,7 @@ public class SaleController {
         model.addAttribute("customers",  customers);
         model.addAttribute("products",   products);
         model.addAttribute("businessId", business.getId());
+        model.addAttribute("businessName", business.getBusinessName()); // getName() নয়, getBusinessName()
 
         return "sales/form";
     }
