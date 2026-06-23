@@ -128,6 +128,7 @@ public class ProductController {
                 "activePage",
                 "inventory"
         );
+        model.addAttribute("activeSubPage", "product");
 
         return LIST_VIEW;
     }

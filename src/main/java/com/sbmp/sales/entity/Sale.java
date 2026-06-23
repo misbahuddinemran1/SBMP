@@ -103,6 +103,15 @@ public class Sale {
     private BigDecimal totalDiscount = BigDecimal.ZERO;
 
     @Column(
+            name = "invoice_discount",
+            nullable = false,
+            precision = 10,
+            scale = 2
+    )
+    @Builder.Default
+    private BigDecimal invoiceDiscount = BigDecimal.ZERO;
+
+    @Column(
             nullable = false,
             precision = 15,
             scale = 2
@@ -169,6 +178,19 @@ public class Sale {
             new ArrayList<>();
 
     // ------------------------------
+    // Payments
+    // ------------------------------
+
+    @OneToMany(
+            mappedBy = "sale",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<SalePayment> payments =
+            new ArrayList<>();
+
+    // ------------------------------
     // Audit
     // ------------------------------
 
@@ -204,5 +226,23 @@ public class Sale {
         items.remove(item);
 
         item.setSale(null);
+    }
+
+    public void addPayment(
+            SalePayment payment
+    ) {
+
+        payments.add(payment);
+
+        payment.setSale(this);
+    }
+
+    public void removePayment(
+            SalePayment payment
+    ) {
+
+        payments.remove(payment);
+
+        payment.setSale(null);
     }
 }

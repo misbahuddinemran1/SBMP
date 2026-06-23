@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Schedules - Accounts Payable</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .card { border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .form-section { background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px; }
+    .section-title { font-weight: 600; color: #2c3e50; margin-bottom: 15px; font-size: 16px; }
+    .form-label { font-weight: 500; color: #2c3e50; margin-bottom: 8px; }
+    .schedule-item { background-color: white; border: 1px solid #ecf0f1; border-radius: 6px; padding: 15px; margin-bottom: 12px; }
+    .schedule-status { font-size: 12px; font-weight: 500; padding: 4px 8px; border-radius: 12px; }
+    .status-pending { background-color: #fff3cd; color: #856404; }
+    .status-paid { background-color: #d4edda; color: #155724; }
+    .status-overdue { background-color: #ffe5e5; color: #d63031; }
+    .payment-summary { background-color: #ecf0f1; padding: 15px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid mt-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2><i class="fas fa-calendar-check"></i> Payment Schedules</h2>
+      <p class="text-muted" th:text="'AP: ' + ${ap.invoiceNumber} + ' | ' + ${ap.supplierName}">AP: INV-001 | Supplier</p>
+    </div>
+    <div class="col-md-4 text-end">
+      <a th:href="@{/accounting/payable/{id}(id=${ap.id})}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to AP
+      </a>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="fas fa-check-circle"></i> <span th:text="${success}">Success message</span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="fas fa-exclamation-circle"></i> <span th:text="${error}">Error message</span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+
+  <div class="row">
+    <!-- Schedule Form -->
+    <div class="col-md-6">
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="fas fa-plus"></i> Add Payment Schedule</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" th:action="@{/accounting/payable/{id}/schedule/add(id=${ap.id})}">
+            <div class="mb-3">
+              <label for="scheduledDate" class="form-label">Scheduled Date <span class="text-danger">*</span></label>
+              <input type="date" name="scheduledDate" id="scheduledDate" class="form-control" required>
+              <small class="text-muted">When should this payment be made</small>
+            </div>
+
+            <div class="mb-3">
+              <label for="scheduledAmount" class="form-label">Payment Amount <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" name="scheduledAmount" id="scheduledAmount" class="form-control"
+                       step="0.01" min="0.01" required placeholder="0.00">
+              </div>
+              <small class="text-muted">Amount to be paid on this schedule</small>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Quick Actions</label>
+              <div class="row g-2">
+                <div class="col-md-6">
+                  <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="setScheduleAmount('outstanding')">
+                    Remaining
+                  </button>
+                </div>
+                <div class="col-md-6">
+                  <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="setScheduleAmount('half')">
+                    Half
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-calendar-plus"></i> Add Schedule
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Payment Summary -->
+      <div class="card">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="fas fa-info-circle"></i> Payment Summary</h5>
+        </div>
+        <div class="card-body">
+          <div class="payment-summary">
+            <div class="mb-3">
+              <small class="text-muted">Invoice Amount</small>
+              <div class="h5 mb-0" th:text="${#numbers.formatCurrency(ap.invoiceAmount)}">$0.00</div>
+            </div>
+            <div class="mb-3">
+              <small class="text-muted">Total Scheduled</small>
+              <div class="h5 mb-0 text-primary" th:text="${#numbers.formatCurrency(paymentSchedules.stream().map(s -> s.scheduledAmount).reduce(0, #thisClass.add))}">$0.00</div>
+            </div>
+            <div class="border-top pt-3">
+              <small class="text-muted">Outstanding</small>
+              <div class="h5 mb-0 text-danger fw-bold" th:text="${#numbers.formatCurrency(ap.outstandingAmount)}">$0.00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schedules List -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="fas fa-list"></i> Payment Schedule List</h5>
+        </div>
+        <div class="card-body">
+          <div th:if="${#lists.isEmpty(paymentSchedules)}" class="text-center py-4 text-muted">
+            <i class="fas fa-inbox fa-2x mb-2"></i>
+            <p>No payment schedules added yet</p>
+          </div>
+
+          <div th:each="schedule : ${paymentSchedules}" class="schedule-item">
+            <div class="row align-items-center">
+              <div class="col-md-3">
+                <div class="small text-muted">Scheduled Date</div>
+                <div class="fw-bold" th:text="${#temporals.format(schedule.scheduledDate, 'dd MMM yyyy')}">01 Jan 2024</div>
+              </div>
+              <div class="col-md-3">
+                <div class="small text-muted">Amount</div>
+                <div class="fw-bold" th:text="${#numbers.formatCurrency(schedule.scheduledAmount)}">$0.00</div>
+              </div>
+              <div class="col-md-3">
+                <div class="small text-muted">Paid</div>
+                <div class="fw-bold text-success" th:text="${#numbers.formatCurrency(schedule.paidAmount)}">$0.00</div>
+              </div>
+              <div class="col-md-3 text-end">
+                <span th:class="'schedule-status status-' + ${schedule.status.toLowerCase()}" th:text="${schedule.status}">PENDING</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary Table -->
+          <div class="mt-4 pt-4 border-top">
+            <table class="table table-sm mb-0">
+              <thead class="table-light">
+              <tr>
+                <th>Total Scheduled</th>
+                <th>Total Paid</th>
+                <th>Pending</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr>
+                <td class="fw-bold" th:text="${#numbers.formatCurrency(paymentSchedules.stream().map(s -> s.scheduledAmount).reduce(0, #thisClass.add))}">$0.00</td>
+                <td class="fw-bold text-success" th:text="${#numbers.formatCurrency(paymentSchedules.stream().map(s -> s.paidAmount).reduce(0, #thisClass.add))}">$0.00</td>
+                <td class="fw-bold text-danger" th:text="${#numbers.formatCurrency(paymentSchedules.stream().map(s -> s.scheduledAmount - s.paidAmount).reduce(0, #thisClass.add))}">$0.00</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Information Section -->
+  <div class="row mt-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="fas fa-lightbulb"></i> About Payment Schedules</h5>
+        </div>
+        <div class="card-body">
+          <p class="mb-2">Payment schedules help you plan and track multiple payments for a single invoice. For example:</p>
+          <ul class="mb-0">
+            <li>Split a large invoice into multiple payments</li>
+            <li>Track scheduled payments over time</li>
+            <li>Monitor payment fulfillment</li>
+            <li>Plan cash flow for future payments</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+  function setScheduleAmount(type) {
+      const invoiceAmount = parseFloat(document.querySelector('[th\\:text*="ap.invoiceAmount"]')?.textContent?.match(/[\d.]+/)?.[0] || 0);
+      const outstandingAmount = parseFloat(document.querySelector('[th\\:text*="ap.outstandingAmount"]')?.textContent?.match(/[\d.]+/)?.[0] || 0);
+      const amountInput = document.getElementById('scheduledAmount');
+
+      if (type === 'outstanding') {
+          amountInput.value = outstandingAmount.toFixed(2);
+      } else if (type === 'half') {
+          amountInput.value = (outstandingAmount / 2).toFixed(2);
+      }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Payment - Accounts Payable</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .card { border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .form-section { background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin-bottom: 20px; }
+        .section-title { font-weight: 600; color: #2c3e50; margin-bottom: 15px; font-size: 16px; }
+        .form-label { font-weight: 500; color: #2c3e50; margin-bottom: 8px; }
+        .payment-summary { background-color: #ecf0f1; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+        .summary-item { margin-bottom: 10px; }
+        .summary-label { font-weight: 500; color: #7f8c8d; font-size: 13px; }
+        .summary-value { font-size: 18px; font-weight: bold; color: #2c3e50; }
+        .payment-method-btn { text-align: center; padding: 15px; border: 2px solid #bdc3c7; border-radius: 6px; cursor: pointer; transition: all 0.3s; }
+        .payment-method-btn:hover { border-color: #3498db; background-color: #ecf0f1; }
+        .payment-method-btn.active { border-color: #3498db; background-color: #d6eaf8; }
+        .alert-info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-money-bill-wave"></i> Record Payment</h2>
+            <p class="text-muted" th:text="'Invoice: ' + ${ap.invoiceNumber} + ' | Supplier: ' + ${ap.supplierName}">Invoice: INV-001 | Supplier: Name</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a th:href="@{/accounting/payable/{id}(id=${ap.id})}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Details
+            </a>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> <span th:text="${error}">Error message</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="row">
+        <!-- Payment Form -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" th:action="@{/accounting/payable/{id}/pay(id=${ap.id})}">
+
+                        <!-- Outstanding Summary -->
+                        <div class="payment-summary">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="summary-item">
+                                        <div class="summary-label">Invoice Amount</div>
+                                        <div class="summary-value" th:text="${#numbers.formatCurrency(ap.invoiceAmount)}">$0.00</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="summary-item">
+                                        <div class="summary-label">Already Paid</div>
+                                        <div class="summary-value text-success" th:text="${#numbers.formatCurrency(ap.paidAmount)}">$0.00</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="summary-item">
+                                <div class="summary-label">Outstanding / Remaining</div>
+                                <div class="summary-value text-danger" th:text="${#numbers.formatCurrency(remainingAmount)}">$0.00</div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Amount Section -->
+                        <div class="form-section">
+                            <div class="section-title">
+                                <i class="fas fa-dollar-sign"></i> Payment Amount
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="paymentAmount" class="form-label">
+                                    Amount to Pay <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="amount" id="paymentAmount" class="form-control"
+                                           step="0.01" min="0.01" required placeholder="0.00"
+                                           th:max="${remainingAmount}">
+                                </div>
+                                <small class="text-muted" th:text="'Maximum: ' + ${#numbers.formatCurrency(remainingAmount)}">Maximum: $0.00</small>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="setPaymentAmount('full')">
+                                        Pay Full Amount
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="setPaymentAmount('half')">
+                                        Pay Half Amount
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method Section -->
+                        <div class="form-section">
+                            <div class="section-title">
+                                <i class="fas fa-credit-card"></i> Payment Method
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-6">
+                                    <input type="radio" name="paymentMethod" id="cash" value="CASH" checked hidden>
+                                    <label for="cash" class="payment-method-btn active" onclick="selectPaymentMethod('cash')">
+                                        <i class="fas fa-coins fa-2x mb-2"></i>
+                                        <div>Cash</div>
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="radio" name="paymentMethod" id="bank" value="BANK" hidden>
+                                    <label for="bank" class="payment-method-btn" onclick="selectPaymentMethod('bank')">
+                                        <i class="fas fa-university fa-2x mb-2"></i>
+                                        <div>Bank Transfer</div>
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="radio" name="paymentMethod" id="bkash" value="BKASH" hidden>
+                                    <label for="bkash" class="payment-method-btn" onclick="selectPaymentMethod('bkash')">
+                                        <i class="fas fa-mobile fa-2x mb-2"></i>
+                                        <div>bKash</div>
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="radio" name="paymentMethod" id="nagad" value="NAGAD" hidden>
+                                    <label for="nagad" class="payment-method-btn" onclick="selectPaymentMethod('nagad')">
+                                        <i class="fas fa-mobile fa-2x mb-2"></i>
+                                        <div>Nagad</div>
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="radio" name="paymentMethod" id="rocket" value="ROCKET" hidden>
+                                    <label for="rocket" class="payment-method-btn" onclick="selectPaymentMethod('rocket')">
+                                        <i class="fas fa-mobile fa-2x mb-2"></i>
+                                        <div>Rocket</div>
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="radio" name="paymentMethod" id="cheque" value="CHEQUE" hidden>
+                                    <label for="cheque" class="payment-method-btn" onclick="selectPaymentMethod('cheque')">
+                                        <i class="fas fa-scroll fa-2x mb-2"></i>
+                                        <div>Cheque</div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Reference Section -->
+                        <div class="form-section">
+                            <div class="section-title">
+                                <i class="fas fa-receipt"></i> Payment Reference
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="paymentReference" class="form-label">Reference Number</label>
+                                <input type="text" name="paymentReference" id="paymentReference" class="form-control"
+                                       placeholder="e.g., CHQ-001, BANK-TXN-123, BKASH-TXN-456">
+                                <small class="text-muted">Transaction ID, cheque number, or reference for tracking</small>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2 justify-content-end mt-4">
+                            <a th:href="@{/accounting/payable/{id}(id=${ap.id})}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="reset" class="btn btn-outline-secondary">
+                                <i class="fas fa-redo"></i> Reset
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i> Record Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Sidebar -->
+        <div class="col-md-4">
+            <!-- Invoice Details -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-file-invoice"></i> Invoice Details</h5>
+                </div>
+                <div class="card-body small">
+                    <div class="mb-2">
+                        <strong>Invoice Number:</strong><br>
+                        <span th:text="${ap.invoiceNumber}">INV-001</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Due Date:</strong><br>
+                        <span th:text="${#temporals.format(ap.dueDate, 'dd MMM yyyy')}">01 Jan 2024</span>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Invoice Amount:</strong><br>
+                        <span class="text-primary fw-bold" th:text="${#numbers.formatCurrency(ap.invoiceAmount)}">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Status -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Payment Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar bg-success" role="progressbar"
+                             th:style="'width: ' + ${ap.invoiceAmount > 0 ? (ap.paidAmount / ap.invoiceAmount * 100) : 0} + '%'"
+                             th:attr="aria-valuenow=${ap.invoiceAmount > 0 ? (ap.paidAmount / ap.invoiceAmount * 100) : 0}">
+                            <span th:text="${#numbers.formatDecimal((ap.invoiceAmount > 0 ? (ap.paidAmount / ap.invoiceAmount * 100) : 0), 1, 0)} + '%'">0%</span>
+                        </div>
+                    </div>
+                    <div class="small">
+                        <div class="mb-2">
+                            <strong>Paid:</strong> <span class="text-success" th:text="${#numbers.formatCurrency(ap.paidAmount)}">$0.00</span>
+                        </div>
+                        <div>
+                            <strong>Outstanding:</strong> <span class="text-danger" th:text="${#numbers.formatCurrency(remainingAmount)}">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Important Notice -->
+            <div class="alert alert-info" role="alert">
+                <h5 class="alert-heading"><i class="fas fa-info-circle"></i> Payment Tips</h5>
+                <ul class="mb-0 small">
+                    <li>Enter the exact payment amount</li>
+                    <li>Keep transaction reference for records</li>
+                    <li>Status will update automatically</li>
+                    <li>You can make partial payments</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+    function setPaymentAmount(type) {
+        const remaining = parseFloat(document.getElementById('paymentAmount').max);
+        const amountInput = document.getElementById('paymentAmount');
+
+        if (type === 'full') {
+            amountInput.value = remaining.toFixed(2);
+        } else if (type === 'half') {
+            amountInput.value = (remaining / 2).toFixed(2);
+        }
+    }
+
+    function selectPaymentMethod(method) {
+        document.querySelectorAll('.payment-method-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById(method).parentElement.classList.add('active');
+    }
+</script>
+</body>
+</html>

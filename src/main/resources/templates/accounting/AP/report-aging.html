@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AP Aging Report - Accounts Payable</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body { background-color: #f8f9fa; }
+        .card { border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .metric-card { padding: 20px; background: white; border-radius: 8px; text-align: center; }
+        .metric-value { font-size: 28px; font-weight: bold; color: #2c3e50; }
+        .metric-label { font-size: 13px; color: #7f8c8d; margin-top: 5px; }
+        .aging-0-30 { color: #3498db; }
+        .aging-30-60 { color: #f39c12; }
+        .aging-60-90 { color: #e67e22; }
+        .aging-90plus { color: #e74c3c; }
+        .table-hover tbody tr:hover { background-color: #f5f5f5; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-chart-bar"></i> AP Aging Report</h2>
+            <p class="text-muted">Analyze outstanding payments by aging periods</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="/accounting/payable" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+            <button onclick="window.print()" class="btn btn-outline-primary">
+                <i class="fas fa-print"></i> Print
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="aging-0-30 metric-value" th:text="${#numbers.formatCurrency(total0To30)}">$0</div>
+                <div class="metric-label">0 - 30 Days</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="aging-30-60 metric-value" th:text="${#numbers.formatCurrency(total30To60)}">$0</div>
+                <div class="metric-label">30 - 60 Days</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="aging-60-90 metric-value" th:text="${#numbers.formatCurrency(total60To90)}">$0</div>
+                <div class="metric-label">60 - 90 Days</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="aging-90plus metric-value" th:text="${#numbers.formatCurrency(total90Plus)}">$0</div>
+                <div class="metric-label">90+ Days</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Chart -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-pie-chart"></i> Aging Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="agingChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Table -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-table"></i> Aging Summary</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Period</th>
+                            <th>Amount</th>
+                            <th>% of Total</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><span class="badge aging-0-30">0-30 Days</span></td>
+                            <td th:text="${#numbers.formatCurrency(total0To30)}">$0.00</td>
+                            <td th:text="${(grandTotal != null and grandTotal.compareTo(0) > 0) ? #numbers.formatDecimal(total0To30 / grandTotal * 100, 1, 0) : '0'} + '%'">0%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge aging-30-60">30-60 Days</span></td>
+                            <td th:text="${#numbers.formatCurrency(total30To60)}">$0.00</td>
+                            <td th:text="${(grandTotal != null and grandTotal.compareTo(0) > 0) ? #numbers.formatDecimal(total30To60 / grandTotal * 100, 1, 0) : '0'} + '%'">0%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge aging-60-90">60-90 Days</span></td>
+                            <td th:text="${#numbers.formatCurrency(total60To90)}">$0.00</td>
+                            <td th:text="${(grandTotal != null and grandTotal.compareTo(0) > 0) ? #numbers.formatDecimal(total60To90 / grandTotal * 100, 1, 0) : '0'} + '%'">0%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge aging-90plus">90+ Days</span></td>
+                            <td th:text="${#numbers.formatCurrency(total90Plus)}">$0.00</td>
+                            <td th:text="${(grandTotal != null and grandTotal.compareTo(0) > 0) ? #numbers.formatDecimal(total90Plus / grandTotal * 100, 1, 0) : '0'} + '%'">0%</td>
+                        </tr>
+                        <tr class="table-light fw-bold">
+                            <td>Total Outstanding</td>
+                            <td th:text="${#numbers.formatCurrency(grandTotal)}">$0.00</td>
+                            <td>100%</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Aging Report by Supplier -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-users"></i> Aging by Supplier</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Supplier</th>
+                        <th class="text-end">0-30 Days</th>
+                        <th class="text-end">30-60 Days</th>
+                        <th class="text-end">60-90 Days</th>
+                        <th class="text-end">90+ Days</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">% of Total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="report : ${agingReport}">
+                        <td th:text="${report.supplierName}">Supplier Name</td>
+                        <td class="text-end aging-0-30 fw-bold" th:text="${#numbers.formatCurrency(report.days0To30)}">$0.00</td>
+                        <td class="text-end aging-30-60 fw-bold" th:text="${#numbers.formatCurrency(report.days30To60)}">$0.00</td>
+                        <td class="text-end aging-60-90 fw-bold" th:text="${#numbers.formatCurrency(report.days60To90)}">$0.00</td>
+                        <td class="text-end aging-90plus fw-bold" th:text="${#numbers.formatCurrency(report.days90Plus)}">$0.00</td>
+                        <td class="text-end fw-bold" th:text="${#numbers.formatCurrency(report.totalOutstanding)}">$0.00</td>
+                        <td class="text-end" th:text="${report.percentageOfTotal != null ? #numbers.formatDecimal(report.percentageOfTotal, 1, 0) : '0'} + '%'">0%</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(agingReport)}">
+                        <td colspan="7" class="text-center text-muted">No aging data found</td>
+                    </tr>
+                    <tr class="table-light fw-bold">
+                        <td>TOTAL</td>
+                        <td class="text-end aging-0-30" th:text="${#numbers.formatCurrency(total0To30)}">$0.00</td>
+                        <td class="text-end aging-30-60" th:text="${#numbers.formatCurrency(total30To60)}">$0.00</td>
+                        <td class="text-end aging-60-90" th:text="${#numbers.formatCurrency(total60To90)}">$0.00</td>
+                        <td class="text-end aging-90plus" th:text="${#numbers.formatCurrency(total90Plus)}">$0.00</td>
+                        <td class="text-end" th:text="${#numbers.formatCurrency(grandTotal)}">$0.00</td>
+                        <td class="text-end">100%</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle"></i> Report Information</h5>
+                <ul class="mb-0">
+                    <li><strong>0-30 Days:</strong> Invoices due within 30 days (current)</li>
+                    <li><strong>30-60 Days:</strong> Invoices 30-60 days overdue</li>
+                    <li><strong>60-90 Days:</strong> Invoices 60-90 days overdue</li>
+                    <li><strong>90+ Days:</strong> Invoices more than 90 days overdue (critical)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('agingChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['0-30 Days', '30-60 Days', '60-90 Days', '90+ Days'],
+                datasets: [{
+                    data: [
+                        parseFloat(document.querySelector('.aging-0-30.metric-value')?.textContent?.replace(/[^0-9.-]/g, '') || 0),
+                        parseFloat(document.querySelector('.aging-30-60.metric-value')?.textContent?.replace(/[^0-9.-]/g, '') || 0),
+                        parseFloat(document.querySelector('.aging-60-90.metric-value')?.textContent?.replace(/[^0-9.-]/g, '') || 0),
+                        parseFloat(document.querySelector('.aging-90plus.metric-value')?.textContent?.replace(/[^0-9.-]/g, '') || 0)
+                    ],
+                    backgroundColor: ['#3498db', '#f39c12', '#e67e22', '#e74c3c']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

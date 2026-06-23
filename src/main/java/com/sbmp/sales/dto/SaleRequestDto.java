@@ -1,5 +1,6 @@
 package com.sbmp.sales.dto;
 
+import com.sbmp.sales.enums.PaymentMethod;
 import com.sbmp.sales.enums.SaleStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -27,7 +28,13 @@ public class SaleRequestDto {
 
     private BigDecimal advancePaid;
 
+    private PaymentMethod paymentMethod;
+
+
+    private BigDecimal invoiceDiscount;
+
     private SaleStatus status;
+
 
     @Valid
     private List<SaleItemRequestDto> items =
