@@ -16,6 +16,7 @@ public interface CustomerRepository
 
 
     List<Customer> findAllByBusinessAndActiveTrueOrderByNameAsc(Business business);
+    
 
     Optional<Customer> findByIdAndBusiness(
             Long id,
@@ -29,6 +30,8 @@ public interface CustomerRepository
     long countByBusiness(
             Business business
     );
+    
+    long countByBusinessAndActiveTrue(Business business);
 
     long countByBusinessAndActive(
             Business business,

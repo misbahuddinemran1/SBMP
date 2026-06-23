@@ -73,6 +73,7 @@ public class CategoryController {
                 "activePage",
                 "inventory"
         );
+        model.addAttribute("activeSubPage", "category");
 
         model.addAttribute(
                 "businessName",

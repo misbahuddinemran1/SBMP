@@ -8,6 +8,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -15,20 +16,9 @@ import java.time.LocalDateTime;
         name = "customers",
         indexes = {
 
-                @Index(
-                        name = "idx_customer_business",
-                        columnList = "business_id"
-                ),
-
-                @Index(
-                        name = "idx_customer_mobile",
-                        columnList = "mobile"
-                ),
-
-                @Index(
-                        name = "idx_customer_code",
-                        columnList = "customer_code"
-                )
+                @Index(name = "idx_customer_business", columnList = "business_id"),
+                @Index(name = "idx_customer_mobile", columnList = "mobile"),
+                @Index(name = "idx_customer_code", columnList = "customer_code")
         }
 )
 @Getter
@@ -38,40 +28,27 @@ import java.time.LocalDateTime;
 @Builder
 public class Customer {
 
-    // ─────────────────────────────────────────────
+    // ─────────────────────────────
     // PRIMARY KEY
-    // ─────────────────────────────────────────────
-
+    // ─────────────────────────────
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ─────────────────────────────────────────────
-    // CUSTOMER INFORMATION
-    // ─────────────────────────────────────────────
-
-    @Column(
-            name = "customer_code",
-            nullable = false,
-            unique = true,
-            length = 30
-    )
+    // ─────────────────────────────
+    // CUSTOMER INFO
+    // ─────────────────────────────
+    @Column(name = "customer_code", nullable = false, unique = true, length = 30)
     private String customerCode;
 
-    @NotBlank(message = "Customer name is required")
+    @NotBlank
     @Size(max = 150)
-    @Column(
-            nullable = false,
-            length = 150
-    )
+    @Column(nullable = false, length = 150)
     private String name;
 
-    @NotBlank(message = "Mobile number is required")
+    @NotBlank
     @Size(max = 20)
-    @Column(
-            nullable = false,
-            length = 20
-    )
+    @Column(nullable = false, length = 20)
     private String mobile;
 
     @Size(max = 150)
@@ -81,55 +58,45 @@ public class Customer {
     @Column(columnDefinition = "TEXT")
     private String address;
 
-    // RETAIL / WHOLESALE / DEALER / CORPORATE
     @Column(length = 50)
     private String customerType;
 
-    // WALK_IN / FACEBOOK / WEBSITE / WHATSAPP / REFERRAL
     @Column(length = 50)
     private String source;
 
-    // ─────────────────────────────────────────────
-    // STATUS
-    // ─────────────────────────────────────────────
+    // ─────────────────────────────
+    // ACCOUNT (ERP CORE)
+    // ─────────────────────────────
 
+    @Builder.Default
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal balance = BigDecimal.ZERO;
+
+    @Builder.Default
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal dueAmount = BigDecimal.ZERO;
+
+    // ─────────────────────────────
+    // STATUS
+    // ─────────────────────────────
     @Builder.Default
     @Column(nullable = false)
     private Boolean active = true;
 
-    // ─────────────────────────────────────────────
-    // RELATIONSHIP
-    // ─────────────────────────────────────────────
-
+    // ─────────────────────────────
+    // RELATION
+    // ─────────────────────────────
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "business_id",
-            nullable = false
-    )
+    @JoinColumn(name = "business_id", nullable = false)
     private Business business;
 
-    // ─────────────────────────────────────────────
+    // ─────────────────────────────
     // AUDIT
-    // ─────────────────────────────────────────────
-
+    // ─────────────────────────────
     @CreationTimestamp
-    @Column(
-            name = "created_at",
-            nullable = false,
-            updatable = false
-    )
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    // ─────────────────────────────────────────────
-    // HELPER
-    // ─────────────────────────────────────────────
-
-    public boolean isActive() {
-
-        return Boolean.TRUE.equals(active);
-    }
 }

@@ -22,6 +22,8 @@ public class SaleResponseDto {
 
     private String customerName;
 
+private String customerPhone;
+
     private Long businessId;
 
     private String businessName;
@@ -36,6 +38,8 @@ public class SaleResponseDto {
 
     private BigDecimal totalDiscount;
 
+    private BigDecimal invoiceDiscount;
+
     private BigDecimal grandTotal;
 
     private BigDecimal paidAmount;
@@ -47,6 +51,8 @@ public class SaleResponseDto {
     private String notes;
 
     private List<SaleItemResponseDto> items;
+
+    private List<SalePaymentResponseDto> payments;
 
     private LocalDateTime createdAt;
 

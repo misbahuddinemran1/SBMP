@@ -3,267 +3,222 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       lang="en">
 
-<!--/*
-    eLoan SaaS — sidebar.html
-    Thymeleaf Fragment: sidebar
-*/-->
-
 <body>
 
-<!-- =============================================
-     SIDEBAR FRAGMENT
-     ============================================= -->
 <aside th:fragment="sidebar"
        class="sidebar"
        id="appSidebar"
        aria-label="Main navigation">
 
-    <!-- =============================================
-         LOGO
-         ============================================= -->
+    <!-- LOGO -->
     <div class="sidebar-logo">
-
         <div class="sidebar-logo-icon">
-            <i class="bi bi-currency-exchange"></i>
+            <i class="bi bi-boxes"></i>
         </div>
-
         <span class="sidebar-brand-name">
-            e<span>Loan</span> SaaS
+            Stock<span>Flow</span> ERP
         </span>
-
     </div>
 
-    <!-- =============================================
-         BUSINESS INFO
-         ============================================= -->
+    <!-- BUSINESS INFO -->
     <div class="sidebar-business">
-
-        <div class="sidebar-business-label">
-            Active Business
-        </div>
-
+        <div class="sidebar-business-label">Active Business</div>
         <div class="sidebar-business-name">
-            <i class="bi bi-building me-1"
-               style="font-size:0.75rem;"></i>
-
-            <span th:text="${businessName ?: 'My Business Ltd.'}">
-                My Business Ltd.
-            </span>
+            <i class="bi bi-building me-1" style="font-size:0.75rem;"></i>
+            <span th:text="${businessName ?: 'My Business Ltd.'}">My Business Ltd.</span>
         </div>
-
     </div>
 
-    <!-- =============================================
-         SIDEBAR NAVIGATION
-         ============================================= -->
     <nav class="sidebar-nav" role="navigation">
 
-        <!-- =============================================
-             MAIN SECTION
-             ============================================= -->
+        <!-- ── MAIN ── -->
         <p class="nav-section-label">Main</p>
+        <ul class="nav flex-column" style="list-style:none;padding:0;">
 
-        <ul class="nav flex-column"
-            style="list-style:none;padding:0;">
-
-            <!-- Dashboard -->
             <li class="nav-item">
-
                 <a th:href="@{/dashboard}"
                    th:classappend="${activePage == 'dashboard'} ? 'active' : ''"
                    class="nav-link">
-
                     <i class="bi bi-grid-1x2"></i>
-
                     <span>Dashboard</span>
-
                 </a>
-
-            </li>
-
-            <!-- Inventory -->
-            <li class="nav-item"
-                sec:authorize="hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')">
-
-                <a th:href="@{/inventory/category}"
-                   th:classappend="${activePage == 'inventory'} ? 'active' : ''"
-                   class="nav-link">
-
-                    <i class="bi bi-boxes"></i>
-
-                    <span>Inventory</span>
-
-                </a>
-
-            </li>
-
-            <!-- Products -->
-            <li class="nav-item">
-
-                <a th:href="@{/products}"
-                   th:classappend="${activePage == 'products'} ? 'active' : ''"
-                   class="nav-link">
-
-                    <i class="bi bi-bag"></i>
-
-                    <span>Products</span>
-
-                </a>
-
             </li>
 
         </ul>
 
-        <!-- =============================================
-             FINANCE SECTION
-             ============================================= -->
-        <p class="nav-section-label">Finance</p>
+        <!-- ── INVENTORY ── -->
+        <p class="nav-section-label">Inventory</p>
+        <ul class="nav flex-column" style="list-style:none;padding:0;">
 
-        <ul class="nav flex-column"
-            style="list-style:none;padding:0;">
-
-            <!-- Sales -->
             <li class="nav-item">
+                <a class="nav-link nav-link-toggle"
+                   data-bs-toggle="collapse"
+                   href="#inventoryMenu"
+                   role="button"
+                   th:classappend="${activePage == 'inventory' or activePage == 'supplier'} ? 'active' : ''"
+                   th:attr="aria-expanded=${activePage == 'inventory' or activePage == 'supplier'}">
+                    <i class="bi bi-boxes"></i>
+                    <span>Inventory</span>
+                    <i class="bi bi-chevron-down ms-auto nav-arrow"></i>
+                </a>
 
+                <div class="collapse"
+                     id="inventoryMenu"
+                     th:classappend="${activePage == 'inventory' or activePage == 'supplier'} ? 'show' : ''">
+                    <ul class="nav flex-column sub-menu" style="list-style:none;padding:0;">
+
+                        <!-- Category -->
+                        <li class="nav-item">
+                            <a th:href="@{/inventory/category}"
+                               th:classappend="${requestURI != null and requestURI.contains('category')} ? 'active' : ''"
+                               class="nav-link sub-link">
+                                <i class="bi bi-tag"></i>
+                                <span>Categories</span>
+                            </a>
+                        </li>
+
+                        <!-- Product -->
+                        <li class="nav-item">
+                            <a th:href="@{/inventory/product}"
+                               th:classappend="${requestURI != null and requestURI.contains('product')} ? 'active' : ''"
+                               class="nav-link sub-link">
+                                <i class="bi bi-bag"></i>
+                                <span>Products</span>
+                            </a>
+                        </li>
+
+                        <!-- Supplier -->
+                        <li class="nav-item">
+                            <a th:href="@{/inventory/supplier}"
+                               th:classappend="${activePage == 'supplier'} ? 'active' : ''"
+                               class="nav-link sub-link">
+                                <i class="bi bi-truck"></i>
+                                <span>Suppliers</span>
+                            </a>
+                        </li>
+
+                        <!-- Stock -->
+                        <li class="nav-item">
+                            <a th:href="@{/inventory/stock}"
+                               th:classappend="${requestURI != null and requestURI.contains('stock')} ? 'active' : ''"
+                               class="nav-link sub-link">
+                                <i class="bi bi-archive"></i>
+                                <span>Stock</span>
+                            </a>
+                        </li>
+
+                        <!-- Purchase -->
+                        <li class="nav-item">
+                            <a th:href="@{/inventory/purchase}"
+                               th:classappend="${requestURI != null and requestURI.contains('purchase')} ? 'active' : ''"
+                               class="nav-link sub-link">
+                                <i class="bi bi-cart-plus"></i>
+                                <span>Purchases</span>
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+            </li>
+
+        </ul>
+
+        <!-- ── FINANCE ── -->
+        <p class="nav-section-label">Finance</p>
+        <ul class="nav flex-column" style="list-style:none;padding:0;">
+
+            <li class="nav-item">
                 <a th:href="@{/sales}"
                    th:classappend="${activePage == 'sales'} ? 'active' : ''"
                    class="nav-link">
-
                     <i class="bi bi-receipt"></i>
-
                     <span>Sales</span>
-
                 </a>
-
             </li>
 
-            <!-- Expenses -->
             <li class="nav-item">
+                <a th:href="@{/customers}"
+                   th:classappend="${activePage == 'customers'} ? 'active' : ''"
+                   class="nav-link">
+                    <i class="bi bi-people"></i>
+                    <span>Customers</span>
+                </a>
+            </li>
 
+            <li class="nav-item">
                 <a th:href="@{/expenses}"
                    th:classappend="${activePage == 'expenses'} ? 'active' : ''"
                    class="nav-link">
-
                     <i class="bi bi-credit-card"></i>
-
                     <span>Expenses</span>
-
                 </a>
-
             </li>
 
-            <!-- Due Management -->
             <li class="nav-item">
-
                 <a th:href="@{/due-management}"
                    th:classappend="${activePage == 'due-management'} ? 'active' : ''"
                    class="nav-link">
-
                     <i class="bi bi-exclamation-circle"></i>
-
                     <span>Due Management</span>
-
-                    <!-- Dynamic Badge -->
                     <span th:if="${dueCount != null and dueCount > 0}"
                           class="nav-badge"
-                          th:text="${dueCount}">
-                        3
-                    </span>
-
+                          th:text="${dueCount}">3</span>
                 </a>
-
             </li>
 
         </ul>
 
-        <!-- =============================================
-             ANALYTICS SECTION
-             ============================================= -->
+        <!-- ── ANALYTICS ── -->
         <p class="nav-section-label">Analytics</p>
+        <ul class="nav flex-column" style="list-style:none;padding:0;">
 
-        <ul class="nav flex-column"
-            style="list-style:none;padding:0;">
-
-            <!-- Reports -->
             <li class="nav-item">
-
                 <a th:href="@{/reports}"
                    th:classappend="${activePage == 'reports'} ? 'active' : ''"
                    class="nav-link">
-
                     <i class="bi bi-bar-chart-line"></i>
-
                     <span>Reports</span>
-
                 </a>
-
             </li>
 
         </ul>
 
-        <!-- =============================================
-             ACCOUNT SECTION
-             ============================================= -->
+        <!-- ── ACCOUNT ── -->
         <p class="nav-section-label">Account</p>
+        <ul class="nav flex-column" style="list-style:none;padding:0;">
 
-        <ul class="nav flex-column"
-            style="list-style:none;padding:0;">
-
-            <!-- Subscription -->
             <li class="nav-item">
-
                 <a th:href="@{/subscription}"
                    th:classappend="${activePage == 'subscription'} ? 'active' : ''"
                    class="nav-link">
-
                     <i class="bi bi-star"></i>
-
                     <span>Subscription</span>
-
                 </a>
-
             </li>
 
-            <!-- Settings -->
             <li class="nav-item">
-
                 <a th:href="@{/settings}"
                    th:classappend="${activePage == 'settings'} ? 'active' : ''"
                    class="nav-link">
-
                     <i class="bi bi-gear"></i>
-
                     <span>Settings</span>
-
                 </a>
-
             </li>
 
         </ul>
 
     </nav>
 
-    <!-- =============================================
-         SIDEBAR FOOTER
-         ============================================= -->
+    <!-- SIDEBAR FOOTER -->
     <div class="sidebar-footer">
-
-        <a th:href="@{/logout}"
-           class="nav-link">
-
+        <a th:href="@{/logout}" class="nav-link">
             <i class="bi bi-box-arrow-left"></i>
-
             <span>Logout</span>
-
         </a>
-
     </div>
 
 </aside>
 
-<!-- =============================================
-     MOBILE OVERLAY
-     ============================================= -->
 <div th:fragment="sidebar-overlay"
      class="sidebar-overlay"
      id="sidebarOverlay"></div>
@@ -273,166 +228,276 @@
 
 
 <!--<!DOCTYPE html>-->
-<!--<html xmlns:th="http://www.thymeleaf.org" lang="en">-->
+<!--<html xmlns:th="http://www.thymeleaf.org"-->
+<!--      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"-->
+<!--      lang="en">-->
+
 <!--&lt;!&ndash;/*-->
 <!--    eLoan SaaS — sidebar.html-->
 <!--    Thymeleaf Fragment: sidebar-->
-<!--    Usage: th:replace="fragments/sidebar :: sidebar"-->
 <!--*/&ndash;&gt;-->
+
 <!--<body>-->
 
 <!--&lt;!&ndash; =============================================-->
 <!--     SIDEBAR FRAGMENT-->
 <!--     ============================================= &ndash;&gt;-->
-<!--<aside th:fragment="sidebar" class="sidebar" id="appSidebar" aria-label="Main navigation">-->
+<!--<aside th:fragment="sidebar"-->
+<!--       class="sidebar"-->
+<!--       id="appSidebar"-->
+<!--       aria-label="Main navigation">-->
 
-<!--    &lt;!&ndash; Logo &ndash;&gt;-->
+<!--    &lt;!&ndash; =============================================-->
+<!--         LOGO-->
+<!--         ============================================= &ndash;&gt;-->
 <!--    <div class="sidebar-logo">-->
+
 <!--        <div class="sidebar-logo-icon">-->
 <!--            <i class="bi bi-currency-exchange"></i>-->
 <!--        </div>-->
-<!--        <span class="sidebar-brand-name">e<span>Loan</span> SaaS</span>-->
+
+<!--        <span class="sidebar-brand-name">-->
+<!--            e<span>Loan</span> SaaS-->
+<!--        </span>-->
+
 <!--    </div>-->
 
-<!--    &lt;!&ndash; Business Badge &ndash;&gt;-->
+<!--    &lt;!&ndash; =============================================-->
+<!--         BUSINESS INFO-->
+<!--         ============================================= &ndash;&gt;-->
 <!--    <div class="sidebar-business">-->
-<!--        <div class="sidebar-business-label">Active Business</div>-->
-<!--        <div class="sidebar-business-name">-->
-<!--            <i class="bi bi-building me-1" style="font-size:0.75rem;"></i>-->
-<!--            <span th:text="${businessName ?: 'My Business Ltd.'}">My Business Ltd.</span>-->
+
+<!--        <div class="sidebar-business-label">-->
+<!--            Active Business-->
 <!--        </div>-->
+
+<!--        <div class="sidebar-business-name">-->
+<!--            <i class="bi bi-building me-1"-->
+<!--               style="font-size:0.75rem;"></i>-->
+
+<!--            <span th:text="${businessName ?: 'My Business Ltd.'}">-->
+<!--                My Business Ltd.-->
+<!--            </span>-->
+<!--        </div>-->
+
 <!--    </div>-->
 
-<!--    &lt;!&ndash; Navigation &ndash;&gt;-->
+<!--    &lt;!&ndash; =============================================-->
+<!--         SIDEBAR NAVIGATION-->
+<!--         ============================================= &ndash;&gt;-->
 <!--    <nav class="sidebar-nav" role="navigation">-->
 
-<!--        &lt;!&ndash; Main &ndash;&gt;-->
+<!--        &lt;!&ndash; =============================================-->
+<!--             MAIN SECTION-->
+<!--             ============================================= &ndash;&gt;-->
 <!--        <p class="nav-section-label">Main</p>-->
 
-<!--        <ul class="nav flex-column" style="list-style:none;padding:0;">-->
+<!--        <ul class="nav flex-column"-->
+<!--            style="list-style:none;padding:0;">-->
 
+<!--            &lt;!&ndash; Dashboard &ndash;&gt;-->
 <!--            <li class="nav-item">-->
+
 <!--                <a th:href="@{/dashboard}"-->
 <!--                   th:classappend="${activePage == 'dashboard'} ? 'active' : ''"-->
 <!--                   class="nav-link">-->
+
 <!--                    <i class="bi bi-grid-1x2"></i>-->
+
 <!--                    <span>Dashboard</span>-->
+
 <!--                </a>-->
+
 <!--            </li>-->
 
-<!--            <li class="nav-item">-->
-<!--                <a th:href="@{/inventory}"-->
+<!--            &lt;!&ndash; Inventory &ndash;&gt;-->
+<!--            <li class="nav-item"-->
+<!--                sec:authorize="hasAnyRole('SUPER_ADMIN','BUSINESS_OWNER')">-->
+
+<!--                <a th:href="@{/inventory/category}"-->
 <!--                   th:classappend="${activePage == 'inventory'} ? 'active' : ''"-->
 <!--                   class="nav-link">-->
+
 <!--                    <i class="bi bi-boxes"></i>-->
+
 <!--                    <span>Inventory</span>-->
+
 <!--                </a>-->
+
 <!--            </li>-->
 
+<!--            &lt;!&ndash; Products &ndash;&gt;-->
 <!--            <li class="nav-item">-->
+
 <!--                <a th:href="@{/products}"-->
 <!--                   th:classappend="${activePage == 'products'} ? 'active' : ''"-->
 <!--                   class="nav-link">-->
+
 <!--                    <i class="bi bi-bag"></i>-->
+
 <!--                    <span>Products</span>-->
+
 <!--                </a>-->
+
 <!--            </li>-->
 
 <!--        </ul>-->
 
-<!--        &lt;!&ndash; Finance &ndash;&gt;-->
+<!--        &lt;!&ndash; =============================================-->
+<!--             FINANCE SECTION-->
+<!--             ============================================= &ndash;&gt;-->
 <!--        <p class="nav-section-label">Finance</p>-->
 
-<!--        <ul class="nav flex-column" style="list-style:none;padding:0;">-->
+<!--        <ul class="nav flex-column"-->
+<!--            style="list-style:none;padding:0;">-->
 
+<!--            &lt;!&ndash; Sales &ndash;&gt;-->
 <!--            <li class="nav-item">-->
+
 <!--                <a th:href="@{/sales}"-->
 <!--                   th:classappend="${activePage == 'sales'} ? 'active' : ''"-->
 <!--                   class="nav-link">-->
+
 <!--                    <i class="bi bi-receipt"></i>-->
+
 <!--                    <span>Sales</span>-->
+
 <!--                </a>-->
+
 <!--            </li>-->
 
+<!--            &lt;!&ndash; Expenses &ndash;&gt;-->
 <!--            <li class="nav-item">-->
+
 <!--                <a th:href="@{/expenses}"-->
 <!--                   th:classappend="${activePage == 'expenses'} ? 'active' : ''"-->
 <!--                   class="nav-link">-->
+
 <!--                    <i class="bi bi-credit-card"></i>-->
+
 <!--                    <span>Expenses</span>-->
+
 <!--                </a>-->
+
 <!--            </li>-->
 
+<!--            &lt;!&ndash; Due Management &ndash;&gt;-->
 <!--            <li class="nav-item">-->
+
 <!--                <a th:href="@{/due-management}"-->
 <!--                   th:classappend="${activePage == 'due-management'} ? 'active' : ''"-->
 <!--                   class="nav-link">-->
+
 <!--                    <i class="bi bi-exclamation-circle"></i>-->
+
 <!--                    <span>Due Management</span>-->
-<!--                    &lt;!&ndash; Dynamic badge: show only when dues > 0 &ndash;&gt;-->
+
+<!--                    &lt;!&ndash; Dynamic Badge &ndash;&gt;-->
 <!--                    <span th:if="${dueCount != null and dueCount > 0}"-->
 <!--                          class="nav-badge"-->
-<!--                          th:text="${dueCount}">3</span>-->
+<!--                          th:text="${dueCount}">-->
+<!--                        3-->
+<!--                    </span>-->
+
 <!--                </a>-->
+
 <!--            </li>-->
 
 <!--        </ul>-->
 
-<!--        &lt;!&ndash; Analytics &ndash;&gt;-->
+<!--        &lt;!&ndash; =============================================-->
+<!--             ANALYTICS SECTION-->
+<!--             ============================================= &ndash;&gt;-->
 <!--        <p class="nav-section-label">Analytics</p>-->
 
-<!--        <ul class="nav flex-column" style="list-style:none;padding:0;">-->
+<!--        <ul class="nav flex-column"-->
+<!--            style="list-style:none;padding:0;">-->
 
+<!--            &lt;!&ndash; Reports &ndash;&gt;-->
 <!--            <li class="nav-item">-->
+
 <!--                <a th:href="@{/reports}"-->
 <!--                   th:classappend="${activePage == 'reports'} ? 'active' : ''"-->
 <!--                   class="nav-link">-->
+
 <!--                    <i class="bi bi-bar-chart-line"></i>-->
+
 <!--                    <span>Reports</span>-->
+
 <!--                </a>-->
+
 <!--            </li>-->
 
 <!--        </ul>-->
 
-<!--        &lt;!&ndash; Account &ndash;&gt;-->
+<!--        &lt;!&ndash; =============================================-->
+<!--             ACCOUNT SECTION-->
+<!--             ============================================= &ndash;&gt;-->
 <!--        <p class="nav-section-label">Account</p>-->
 
-<!--        <ul class="nav flex-column" style="list-style:none;padding:0;">-->
+<!--        <ul class="nav flex-column"-->
+<!--            style="list-style:none;padding:0;">-->
 
+<!--            &lt;!&ndash; Subscription &ndash;&gt;-->
 <!--            <li class="nav-item">-->
+
 <!--                <a th:href="@{/subscription}"-->
 <!--                   th:classappend="${activePage == 'subscription'} ? 'active' : ''"-->
 <!--                   class="nav-link">-->
+
 <!--                    <i class="bi bi-star"></i>-->
+
 <!--                    <span>Subscription</span>-->
+
 <!--                </a>-->
+
 <!--            </li>-->
 
+<!--            &lt;!&ndash; Settings &ndash;&gt;-->
 <!--            <li class="nav-item">-->
+
 <!--                <a th:href="@{/settings}"-->
 <!--                   th:classappend="${activePage == 'settings'} ? 'active' : ''"-->
 <!--                   class="nav-link">-->
+
 <!--                    <i class="bi bi-gear"></i>-->
+
 <!--                    <span>Settings</span>-->
+
 <!--                </a>-->
+
 <!--            </li>-->
 
 <!--        </ul>-->
 
-<!--    </nav>&lt;!&ndash; /sidebar-nav &ndash;&gt;-->
+<!--    </nav>-->
 
-<!--    &lt;!&ndash; Footer: Logout &ndash;&gt;-->
+<!--    &lt;!&ndash; =============================================-->
+<!--         SIDEBAR FOOTER-->
+<!--         ============================================= &ndash;&gt;-->
 <!--    <div class="sidebar-footer">-->
-<!--        <a th:href="@{/logout}" class="nav-link">-->
+
+<!--        <a th:href="@{/logout}"-->
+<!--           class="nav-link">-->
+
 <!--            <i class="bi bi-box-arrow-left"></i>-->
+
 <!--            <span>Logout</span>-->
+
 <!--        </a>-->
+
 <!--    </div>-->
 
 <!--</aside>-->
 
-<!--&lt;!&ndash; Overlay (mobile) &ndash;&gt;-->
-<!--<div th:fragment="sidebar-overlay" class="sidebar-overlay" id="sidebarOverlay"></div>-->
+<!--&lt;!&ndash; =============================================-->
+<!--     MOBILE OVERLAY-->
+<!--     ============================================= &ndash;&gt;-->
+<!--<div th:fragment="sidebar-overlay"-->
+<!--     class="sidebar-overlay"-->
+<!--     id="sidebarOverlay"></div>-->
 
 <!--</body>-->
 <!--</html>-->
+
+

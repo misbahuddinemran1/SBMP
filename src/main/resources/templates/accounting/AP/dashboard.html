@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AP Dashboard - Accounts Payable</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .metric-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .metric-value { font-size: 28px; font-weight: bold; color: #2c3e50; }
+        .metric-label { font-size: 14px; color: #7f8c8d; margin-top: 5px; }
+        .metric-icon { font-size: 32px; color: #3498db; margin-right: 15px; }
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .overdue { background-color: #ffe5e5; color: #d63031; }
+        .pending { background-color: #fff3cd; color: #856404; }
+        .paid { background-color: #d4edda; color: #155724; }
+        .partially-paid { background-color: #d1ecf1; color: #0c5460; }
+        .sidebar { background-color: #2c3e50; color: white; padding: 20px; border-radius: 8px; }
+        .sidebar h5 { margin-bottom: 15px; font-weight: bold; }
+        .sidebar a { color: #ecf0f1; text-decoration: none; padding: 8px 0; display: block; }
+        .sidebar a:hover { color: #3498db; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-file-invoice-dollar"></i> Accounts Payable Dashboard</h2>
+            <p class="text-muted">Overview of all payables and supplier obligations</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="/accounting/payable/new" class="btn btn-primary me-2">
+                <i class="fas fa-plus"></i> New AP
+            </a>
+            <a href="/accounting/payable/list" class="btn btn-outline-primary">
+                <i class="fas fa-list"></i> View All
+            </a>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="d-flex align-items-center">
+                    <div class="metric-icon"><i class="fas fa-money-bill-wave"></i></div>
+                    <div>
+                        <div class="metric-value" th:text="${#numbers.formatCurrency(totalOutstanding)}">$0</div>
+                        <div class="metric-label">Total Outstanding</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="d-flex align-items-center">
+                    <div class="metric-icon" style="color: #e74c3c;"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div>
+                        <div class="metric-value" th:text="${overdueCount}">0</div>
+                        <div class="metric-label">Overdue Invoices</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="d-flex align-items-center">
+                    <div class="metric-icon" style="color: #e74c3c;"><i class="fas fa-calendar-times"></i></div>
+                    <div>
+                        <div class="metric-value" th:text="${#numbers.formatCurrency(overdueAmount)}">$0</div>
+                        <div class="metric-label">Overdue Amount</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="d-flex align-items-center">
+                    <div class="metric-icon" style="color: #27ae60;"><i class="fas fa-building"></i></div>
+                    <div>
+                        <div class="metric-value" th:text="${totalSuppliers}">0</div>
+                        <div class="metric-label">Active Suppliers</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Overdue AP List -->
+        <div class="col-md-6">
+            <div class="metric-card">
+                <h5><i class="fas fa-clock"></i> Overdue Payables (Top 10)</h5>
+                <hr>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                        <tr>
+                            <th>Invoice</th>
+                            <th>Supplier</th>
+                            <th>Amount</th>
+                            <th>Due Date</th>
+                            <th>Days Overdue</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="ap : ${overdueAP}">
+                            <td>
+                                <a th:href="@{/accounting/payable/{id}(id=${ap.id})}" th:text="${ap.invoiceNumber}">INV-001</a>
+                            </td>
+                            <td th:text="${ap.supplierName}">Supplier Name</td>
+                            <td th:text="${#numbers.formatCurrency(ap.invoiceAmount)}">$0</td>
+                            <td th:text="${ap.dueDate}">2024-01-01</td>
+                            <td>
+                                <span class="status-badge overdue" th:text="${ap.daysOverdue} + ' days'">0 days</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(overdueAP)}">
+                            <td colspan="5" class="text-center text-muted">No overdue payables</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aging Summary -->
+        <div class="col-md-6">
+            <div class="metric-card">
+                <h5><i class="fas fa-chart-pie"></i> AP Aging Summary</h5>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <small class="text-muted">0-30 Days</small>
+                            <div class="metric-value text-primary" th:text="${#numbers.formatCurrency(aging0To30)}">$0</div>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">60-90 Days</small>
+                            <div class="metric-value text-warning" th:text="${#numbers.formatCurrency(aging60To90)}">$0</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <small class="text-muted">30-60 Days</small>
+                            <div class="metric-value text-info" th:text="${#numbers.formatCurrency(aging30To60)}">$0</div>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">90+ Days</small>
+                            <div class="metric-value text-danger" th:text="${#numbers.formatCurrency(aging90Plus)}">$0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Top Suppliers -->
+        <div class="col-md-12">
+            <div class="metric-card">
+                <h5><i class="fas fa-users"></i> Supplier Outstanding Summary</h5>
+                <hr>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Supplier</th>
+                            <th>Outstanding Amount</th>
+                            <th>Invoice Count</th>
+                            <th>Overdue Count</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="supplier : ${supplierOutstanding}">
+                            <td th:text="${supplier.supplierName}">Supplier Name</td>
+                            <td th:text="${#numbers.formatCurrency(supplier.outstandingAmount)}">$0</td>
+                            <td th:text="${supplier.invoiceCount}">0</td>
+                            <td th:text="${supplier.overdueInvoiceCount}">0</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(supplierOutstanding)}">
+                            <td colspan="5" class="text-center text-muted">No supplier data</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="metric-card">
+                <h5><i class="fas fa-info-circle"></i> Quick Links</h5>
+                <hr>
+                <a href="/accounting/payable/list" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-list"></i> View All Payables
+                </a>
+                <a href="/accounting/payable/reports/aging" class="btn btn-outline-info me-2">
+                    <i class="fas fa-chart-bar"></i> Aging Report
+                </a>
+                <a href="/accounting/payable/reports/supplier-outstanding" class="btn btn-outline-success">
+                    <i class="fas fa-chart-line"></i> Supplier Report
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
